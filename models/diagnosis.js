@@ -7,7 +7,10 @@ const diagnosisSchema = m.Schema({
     depart_id: String,
     timestamp: Date,
     diagnosis_message: String,
-    medicine_message: String
+    medicine_message: String,
+
+    // wyp ask: may be more attribute? like:
+    // hospital: String, section ...
 });
 
 module.exports = m.model("diagnosis", diagnosisSchema);
