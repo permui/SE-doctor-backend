@@ -10,4 +10,4 @@ const patientSchema = mongoose.Schema({
     age: Number,
 });
 
-module.exports = mongoose.Model('patient', patientSchema);
+module.exports = mongoose.model('patient', patientSchema);
