@@ -110,28 +110,28 @@ router.post('/info/modify', async(req, res, next) => {
     // modified
 
     await Doctor.findOneAndUpdate({
-        doctor_id: _doctor_id
-    }, {
-        $set: {
-            name: _doctor_name,
-            gender: _gender,
-            age: _age,
-            dept_id: _department, // should not be uuidv4 here?
-            photo: _photo,
-            position: _position
+            doctor_id: _doctor_id
+        }, {
+            $set: {
+                name: _doctor_name,
+                gender: _gender,
+                age: _age,
+                dept_id: _department, // should not be uuidv4 here?
+                photo: _photo,
+                position: _position
+            }
         }
-    }
-    // , {}, function(err, data) { //debug function
-    //     if (err) {
-    //         console.log('Error in database')
-    //     } else if (!data) {
-    //         console.log('Not such data')
-    //         console.log(data)
-    //     } else {
-    //         console.log('Modify data success')
-    //         console.log(data)
-    //     }
-    // }
+        // , {}, function(err, data) { //debug function
+        //     if (err) {
+        //         console.log('Error in database')
+        //     } else if (!data) {
+        //         console.log('Not such data')
+        //         console.log(data)
+        //     } else {
+        //         console.log('Modify data success')
+        //         console.log(data)
+        //     }
+        // }
     );
 
     // return
@@ -147,24 +147,24 @@ router.post('/info/modify', async(req, res, next) => {
 // post: call
 router.post('/call', async(req, res, next) => {
     let _user_id = req.body.user_id;
-    
-    deletedOrder = await Order.findOne({user_id:_user_id});
+
+    deletedOrder = await Order.findOne({ user_id: _user_id });
     console.log(deletedOrder);
 
     await Order.findOneAndRemove({
-        user_id: _user_id // some problem here ---> one patient <-> one order_id 
-    }
-    // , {}, function(err, data) { //debug function
-    //     if (err) {
-    //         console.log('Error in database')
-    //     } else if (!data) {
-    //         console.log('Not such data')
-    //         console.log(data)
-    //     } else {
-    //         console.log('Remove data success')
-    //         console.log(data)
-    //     }
-    // }
+            user_id: _user_id // some problem here ---> one patient <-> one order_id 
+        }
+        // , {}, function(err, data) { //debug function
+        //     if (err) {
+        //         console.log('Error in database')
+        //     } else if (!data) {
+        //         console.log('Not such data')
+        //         console.log(data)
+        //     } else {
+        //         console.log('Remove data success')
+        //         console.log(data)
+        //     }
+        // }
     );
 
     // return
@@ -190,6 +190,10 @@ function formatDate(date, format) {
 
 
 
+const patientDocToInterface = (doc) => {
+
+};
+
 // get: patient_info
 router.get('/patient_info/get', async(req, res, next) => {
     let _user_id = req.query.user_id;
@@ -201,7 +205,6 @@ router.get('/patient_info/get', async(req, res, next) => {
 
     // }
 
-
     let _data = (await Patient.findOne({
         user_id: _user_id
     }).exec()) || [];
@@ -211,14 +214,15 @@ router.get('/patient_info/get', async(req, res, next) => {
         user_id: _user_id
     }).exec()) || [];
 
+
     let _doctor_id = order_data.doctor_id;
 
     let doctor_data = (await Doctor.findOne({
-        doctor_id:_doctor_id
+        doctor_id: _doctor_id
     }).exec()) || [];
     console.log(doctor_data);
     let r = {
-        id: _data.user_id,
+        id: _user_id,
         name: _data.name,
         gender: _data.gender,
         age: _data.age,
