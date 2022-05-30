@@ -64,7 +64,7 @@ router.get('/info/get', async(req, res, next) => {
     let _data = (await Doctor.find({
             name: _name,
             // name: _name,
-            department: _department
+            dept_id: _department
         }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page

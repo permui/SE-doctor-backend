@@ -4,49 +4,61 @@ const express = require("express"),
 const Admin = require("../../models/adminis"),
     Doctor = require("../../models/doctor");
 
+function stringToData(dateString) {
+    if (dateString) {
+        let year = dateString.slice(0, 4);
+        let month = dateString.slice(4, 6);
+        let date = dateString.slice(6, 8);
+        let time_date = new Date(year, month - 1, date);
+        return time_date;
+    } else {
+        console.log("data String null")
+    }
+}
 
 // // not completed
-// router.post('/schedule/upload', async(req, res, next) => {
-//     console.log("into /schedule/upload")
-//     let _schedule_id = req.body.schedule_id;
-//     let _department = req.body.department;
-//     let _time = req.body.time;
-//     let _doctor_id = req.body.doctor_id;
+router.post('/schedule/upload', async(req, res, next) => {
+    console.log("into /schedule/upload")
+    let _schedule_id = req.body.schedule_id;
+    let _department = req.body.department;
+    let _time = req.body.time;
+    let _doctor_id = req.body.doctor_id;
 
-//     // modified
+    // time transfer
 
-//     await Admin.findOneAndUpdate({
-//         doctor_id: _doctor_id
-//     }, {
-//         $set: {
-//             name: _doctor_name,
-//             gender: _gender,
-//             age: _age,
-//             dept_id: _department, // should not be uuidv4 here?
-//             photo: _photo,
-//             position: _position
-//         }
-//     }, {}, function(err, data) { //debug function
-//         if (err) {
-//             console.log('Error in database')
-//         } else if (!data) {
-//             console.log('Not such data')
-//             console.log(data)
-//         } else {
-//             console.log('Modify data success')
-//             console.log(data)
-//         }
-//     });
+    let _date = stringToData(_schedule_id)
 
-//     let r = {
-//         status: 100,
-//         msg: "success",
-//         data: {}
-//     };
+    // modified
 
-//     console.log(r);
-//     res.json(r);
-// });
+    await Admin.findOneAndUpdate({
+        depart_id: _department
+    }, {
+        $set: {
+            date: _date,
+            time: _time,
+            doctor_id: _doctor_id
+        }
+    }, {}, function(err, data) { //debug function
+        if (err) {
+            console.log('Error in database')
+        } else if (!data) {
+            console.log('Not such data')
+            console.log(data)
+        } else {
+            console.log('Modify schedule data success')
+            console.log(data)
+        }
+    });
+
+    let r = {
+        status: 100,
+        msg: "success",
+        data: {}
+    };
+
+    console.log(r);
+    res.json(r);
+});
 
 // post: info_change
 router.post('/doctor/info_change', async(req, res, next) => {
@@ -69,7 +81,7 @@ router.post('/doctor/info_change', async(req, res, next) => {
             console.log('Not such data')
             console.log(data)
         } else {
-            console.log('Modify data success')
+            console.log('Modify doctor data success')
             console.log(data)
         }
     });
