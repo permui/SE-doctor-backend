@@ -186,7 +186,7 @@ function formatDate(date, format) {
     }
 
     return format.replace(/mm|dd|yyyy/gi, matched => map[matched])
-}
+};
 
 
 
@@ -200,25 +200,23 @@ router.get('/patient_info/get', async(req, res, next) => {
     // if (n >= 0){
 
     // }
-    console.log(_user_id);
 
-    let _data = (await Patient.find({
+
+    let _data = (await Patient.findOne({
         user_id: _user_id
     }).exec()) || [];
 
-    console.log(_data);
 
-    let order_data = (await Order.find({
+    let order_data = (await Order.findOne({
         user_id: _user_id
     }).exec()) || [];
-    console.log(order_data);
-    // let _doctor_id = order_data.doctor_id;
-    // console.log(_doctor_id);
-    // let doctor_data = (await Doctor.find({
-    //     // doctor_id: order_data.doctor_id
-    //     doctor_id:_doctor_id
-    // }).exec()) || [];
-    // console.log(doctor_data);
+
+    let _doctor_id = order_data.doctor_id;
+
+    let doctor_data = (await Doctor.findOne({
+        doctor_id:_doctor_id
+    }).exec()) || [];
+    console.log(doctor_data);
     let r = {
         id: _data.user_id,
         name: _data.name,
@@ -227,7 +225,7 @@ router.get('/patient_info/get', async(req, res, next) => {
         phone: _data.phone,
         appoint_date: order_data.date,
         section: order_data.time, //SectionType.Afternoon, // need export, not completed []
-        // department: doctor_data.dept_id,
+        department: doctor_data.dept_id,
         history: [] //_data.history
     };
 
