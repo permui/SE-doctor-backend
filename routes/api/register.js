@@ -21,11 +21,16 @@
 
 function stringToDataBySplit(dateString) {
     if (dateString) {
-        let timearray = dateString.split('-');
-        var year = timearray[0];
-        var month = timearray[1];
-        var date = timearray[2];
-        var time_date = new Date(year, month - 1, date);
+        // let timearray = dateString.split('-');
+        let timearray = dateString.replace(/-/g,'/');
+        // var year = timearray[0];
+        // var month = timearray[1];
+        // var date = timearray[2];
+        // console.log(year);
+        // console.log(month);
+        // console.log(date);
+        // var time_date = new Date(year, month - 1, date+1);
+        var time_date = new Date(timearray);
         return time_date;
     } else {
         console.log("data String null")
@@ -35,6 +40,7 @@ function stringToDataBySplit(dateString) {
 const express = require('express'),
     router = express.Router();
 
+const order = require('../../models/order');
 const Order = require("../../models/order"),
     Patient = require("../../models/patient");
 // get
@@ -47,15 +53,24 @@ router.get('/get', async(req, res, next) => {
         doctor_id: _doctor_id,
         date: _date
     }).exec()) || [];
-
+    console.log(_date);
+    console.log(order_data);
     let patient_data = (await Patient.find({
         user_id: order_data.user_id,
     }).exec()) || [];
-
-    var array = new Array();
-    array[0] = order_data.user_id;
-    array[1] = patient_data.name;
-    array[2] = order_data.time;
+    console.log(patient_data);
+    var array = [];
+    _user_id = order_data.map((value)=>value.user_id).join(',');
+    _name = patient_data.map((value)=>value.name).join(',');
+    _time = order_data.map((value)=>value.time).join(',');
+    for(var i=0; i<_user_id.length; i++){
+        array.push({user_id:_user_id[i],
+                    name:_name[i],
+                    time:_time[i]});
+        // array.push(_user_id[i]);
+        // array.push(_name[i]);
+        // array.push(_time[i]);
+    }
     let r = {
         status: 100,
         msg: "success",

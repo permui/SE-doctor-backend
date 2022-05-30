@@ -1,9 +1,9 @@
 const express = require("express"),
     router = express.Router();
 
-const Admin = require("../../models/adminis"),
+const Admin = require("../../models/admin"),
     Doctor = require("../../models/doctor"),
-    Schedule = require("../../models/schedule")
+    Schedule = require("../../models/schedule");
 
 function stringToData(dateString) {
     if (dateString) {
@@ -39,17 +39,19 @@ router.post('/schedule/upload', async(req, res, next) => {
             time: _time,
             doctor_id: _doctor_id
         }
-    }, {}, function(err, data) { //debug function
-        if (err) {
-            console.log('Error in database')
-        } else if (!data) {
-            console.log('Not such data')
-            console.log(data)
-        } else {
-            console.log('Modify schedule data success')
-            console.log(data)
-        }
-    });
+    }
+    // , {}, function(err, data) { //debug function
+    //     if (err) {
+    //         console.log('Error in database')
+    //     } else if (!data) {
+    //         console.log('Not such data')
+    //         console.log(data)
+    //     } else {
+    //         console.log('Modify schedule data success')
+    //         console.log(data)
+    //     }
+    // }
+    );
 
     let r = {
         status: 100,
@@ -64,9 +66,9 @@ router.post('/schedule/upload', async(req, res, next) => {
 // post: info_change
 router.post('/doctor/info_change', async(req, res, next) => {
     console.log("into /doctor/info_change")
-    let _doctor_id = res.body.doctor_id;
-    let _department = res.body.department;
-    let _position = res.body.position;
+    let _doctor_id = req.body.doctor_id;
+    let _department = req.body.department;
+    let _position = req.body.position;
 
     await Doctor.findOneAndUpdate({
         doctor_id: _doctor_id
@@ -75,17 +77,19 @@ router.post('/doctor/info_change', async(req, res, next) => {
             dept_id: _department,
             position: _position
         }
-    }, {}, function(err, data) { //debug function
-        if (err) {
-            console.log('Error in database')
-        } else if (!data) {
-            console.log('Not such data')
-            console.log(data)
-        } else {
-            console.log('Modify doctor data success')
-            console.log(data)
-        }
-    });
+    }
+    // , {}, function(err, data) { //debug function
+    //     if (err) {
+    //         console.log('Error in database')
+    //     } else if (!data) {
+    //         console.log('Not such data')
+    //         console.log(data)
+    //     } else {
+    //         console.log('Modify doctor data success')
+    //         console.log(data)
+    //     }
+    // }
+    );
 
     let r = {
         status: 100,

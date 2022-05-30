@@ -6,6 +6,7 @@ const Doctor = require('../../models/doctor'),
     Order = require('../../models/order'),
     Patient = require('../../models/patient'),
     Diagnosis = require('../../models/diagnosis');
+const { v4: uuidv4 } = require('uuid');
 
 router.get('/info/details', async(req, res, next) => {
     let id = req.query.doctor_id;
@@ -64,7 +65,6 @@ router.get('/info/get', async(req, res, next) => {
 
     let _data = (await Doctor.find({
             name: _name,
-            // name: _name,
             dept_id: _department
         }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
@@ -110,27 +110,29 @@ router.post('/info/modify', async(req, res, next) => {
     // modified
 
     await Doctor.findOneAndUpdate({
-        doctor_id: _doctor_id
-    }, {
-        $set: {
-            name: _doctor_name,
-            gender: _gender,
-            age: _age,
-            dept_id: _department, // should not be uuidv4 here?
-            photo: _photo,
-            position: _position
+            doctor_id: _doctor_id
+        }, {
+            $set: {
+                name: _doctor_name,
+                gender: _gender,
+                age: _age,
+                dept_id: _department, // should not be uuidv4 here?
+                photo: _photo,
+                position: _position
+            }
         }
-    }, {}, function(err, data) { //debug function
-        if (err) {
-            console.log('Error in database')
-        } else if (!data) {
-            console.log('Not such data')
-            console.log(data)
-        } else {
-            console.log('Modify data success')
-            console.log(data)
-        }
-    });
+        // , {}, function(err, data) { //debug function
+        //     if (err) {
+        //         console.log('Error in database')
+        //     } else if (!data) {
+        //         console.log('Not such data')
+        //         console.log(data)
+        //     } else {
+        //         console.log('Modify data success')
+        //         console.log(data)
+        //     }
+        // }
+    );
 
     // return
     let r = {
@@ -145,21 +147,25 @@ router.post('/info/modify', async(req, res, next) => {
 // post: call
 router.post('/call', async(req, res, next) => {
     let _user_id = req.body.user_id;
-    console.log(_user_id);
+
+    deletedOrder = await Order.findOne({ user_id: _user_id });
+    console.log(deletedOrder);
 
     await Order.findOneAndRemove({
-        user_id: _user_id // some problem here ---> one patient <-> one order_id 
-    }, {}, function(err, data) { //debug function
-        if (err) {
-            console.log('Error in database')
-        } else if (!data) {
-            console.log('Not such data')
-            console.log(data)
-        } else {
-            console.log('Remove data success')
-            console.log(data)
+            user_id: _user_id // some problem here ---> one patient <-> one order_id 
         }
-    });
+        // , {}, function(err, data) { //debug function
+        //     if (err) {
+        //         console.log('Error in database')
+        //     } else if (!data) {
+        //         console.log('Not such data')
+        //         console.log(data)
+        //     } else {
+        //         console.log('Remove data success')
+        //         console.log(data)
+        //     }
+        // }
+    );
 
     // return
     let r = {
@@ -169,7 +175,7 @@ router.post('/call', async(req, res, next) => {
 
     console.log(r);
     res.json(r);
-})
+});
 
 
 function formatDate(date, format) {
@@ -180,7 +186,7 @@ function formatDate(date, format) {
     }
 
     return format.replace(/mm|dd|yyyy/gi, matched => map[matched])
-}
+};
 
 
 
@@ -203,22 +209,18 @@ router.get('/patient_info/get', async(req, res, next) => {
         user_id: _user_id
     }).exec()) || [];
 
-    // if (_data.length == 0) {
-    //     console.log("not such patient");
-    // } else if (_data.length > 1) {
-    //     console.log("one patient one id");
-    // } else {
-    //     _data = _data[0];
-    // }
 
     let order_data = (await Order.findOne({
         user_id: _user_id
     }).exec()) || [];
 
-    let doctor_data = (await Doctor.findOne({
-        doctor_id: order_data.doctor_id
-    }).exec()) || [];
 
+    let _doctor_id = order_data.doctor_id;
+
+    let doctor_data = (await Doctor.findOne({
+        doctor_id: _doctor_id
+    }).exec()) || [];
+    console.log(doctor_data);
     let r = {
         id: _user_id,
         name: _data.name,
@@ -233,7 +235,7 @@ router.get('/patient_info/get', async(req, res, next) => {
 
     console.log(r);
     res.json(r);
-})
+});
 
 
 const diagnosisInterfaceToDoc = (interface) => {
@@ -260,6 +262,9 @@ router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
 
     let doc = diagnosisInterfaceToDoc(req.body);
+
+    console.log(doc);
+
     await Diagnosis.insertMany(doc);
 
     let r = {
