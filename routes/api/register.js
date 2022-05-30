@@ -59,7 +59,7 @@ router.get('/get', async(req, res, next) => {
         time: _date 
     }).exec()) || [];
     // let test_data = await Order.find({order_id : "O102"});
-    // console.log(test_data);
+    // console.log(test_data); 
     // console.log(order_data);
     let patient_data = (await Patient.find({
         user_id: order_data.map((value)=>value.user_id),
