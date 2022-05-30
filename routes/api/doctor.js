@@ -4,7 +4,8 @@ const express = require('express'),
 const Doctor = require('../../models/doctor'),
     Schedule = require('../../models/schedule'),
     Order = require('../../models/order'),
-    Patient = require('../../models/patient');
+    Patient = require('../../models/patient'),
+    Diagnosis = require('../../models/diagnosis');
 
 router.get('/info/details', async(req, res, next) => {
     let id = req.query.doctor_id;
@@ -183,6 +184,10 @@ function formatDate(date, format) {
 
 
 
+const patientDocToInterface = (doc) => {
+
+};
+
 // get: patient_info
 router.get('/patient_info/get', async(req, res, next) => {
     let _user_id = req.query.user_id;
@@ -194,20 +199,28 @@ router.get('/patient_info/get', async(req, res, next) => {
 
     // }
 
-    let _data = (await Patient.find({
+    let _data = (await Patient.findOne({
         user_id: _user_id
     }).exec()) || [];
 
-    let order_data = (await Order.find({
+    // if (_data.length == 0) {
+    //     console.log("not such patient");
+    // } else if (_data.length > 1) {
+    //     console.log("one patient one id");
+    // } else {
+    //     _data = _data[0];
+    // }
+
+    let order_data = (await Order.findOne({
         user_id: _user_id
     }).exec()) || [];
 
-    let doctor_data = (await Doctor.find({
+    let doctor_data = (await Doctor.findOne({
         doctor_id: order_data.doctor_id
     }).exec()) || [];
 
     let r = {
-        id: _data.user_id,
+        id: _user_id,
         name: _data.name,
         gender: _data.gender,
         age: _data.age,
@@ -223,9 +236,9 @@ router.get('/patient_info/get', async(req, res, next) => {
 })
 
 
-const diagnosisDocToInterface = (interface) => {
+const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
-    let _timestamp = formatDate(now, 'yyyy-mm-dd');
+    // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
     if (interface !== null && interface !== undefined &&
         interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
@@ -234,7 +247,7 @@ const diagnosisDocToInterface = (interface) => {
             patient_id: interface.patient_id,
             doctor_id: interface.doctor_id,
             depart_id: interface.department,
-            timestamp: _timestamp,
+            timestamp: now, //_timestamp,
             diagnosis_message: interface.diagnosis_message,
             medicine_message: interface.medicine_message
         }
@@ -246,7 +259,7 @@ const diagnosisDocToInterface = (interface) => {
 router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
 
-    let doc = diagnosisDocToInterface(req.body);
+    let doc = diagnosisInterfaceToDoc(req.body);
     await Diagnosis.insertMany(doc);
 
     let r = {
