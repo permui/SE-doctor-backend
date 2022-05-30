@@ -21,7 +21,7 @@ router.get('/info/details', async(req, res, next) => {
 //Luyao Ma
 router.get("/schedule", async(req, res, next) => {
     let id = req.query.doctor_id;
-    let data = await Schedule.findOne({ doctor_id: id });
+    let data = await Schedule.find({ doctor_id: id });
     let r = {
         status: 200,
         msg: "success",
