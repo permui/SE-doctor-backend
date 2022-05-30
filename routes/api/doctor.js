@@ -186,9 +186,9 @@ function formatDate(date, format) {
 // get: patient_info
 router.get('/patient_info/get', async(req, res, next) => {
     let _user_id = req.query.user_id;
-    let today = new Date();
-    let n = today.getHours();
-    formatDate(today, 'yyyy-mm-dd');
+    // let today = new Date();
+    // let n = today.getHours();
+    // formatDate(today, 'yyyy-mm-dd');
 
     // if (n >= 0){
 
@@ -198,16 +198,23 @@ router.get('/patient_info/get', async(req, res, next) => {
         user_id: _user_id
     }).exec()) || [];
 
+    let order_data = (await Order.find({
+        user_id: _user_id
+    }).exec()) || [];
+
+    let doctor_data = (await Doctor.find({
+        doctor_id: order_data.doctor_id
+    }).exec()) || [];
 
     let r = {
         id: _data.user_id,
         name: _data.name,
         gender: _data.gender,
-        // age: _data.age,
+        age: _data.age,
         phone: _data.phone,
-        appoint_data: today,
-        section: 1, //SectionType.Afternoon, // need export, not completed []
-        // department: _data.department,
+        appoint_date: order_data.date,
+        section: order_data.time, //SectionType.Afternoon, // need export, not completed []
+        department: doctor_data.dept_id,
         history: [] //_data.history
     };
 
