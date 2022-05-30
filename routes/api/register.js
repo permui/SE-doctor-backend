@@ -30,8 +30,12 @@ function stringToDataBySplit(dateString) {
         // console.log(month);
         // console.log(date);
         // var time_date = new Date(year, month - 1, date+1);
+        console.log(timearray);
         var time_date = new Date(timearray);
-        return time_date;
+        console.log(time_date);
+        var time_date_ISO = time_date.toISOString();
+        console.log(time_date_ISO);
+        return time_date_ISO;
     } else {
         console.log("data String null")
     }
@@ -48,28 +52,32 @@ router.get('/get', async(req, res, next) => {
     let _date = req.query.date;
     let _doctor_id = req.query.doctor_id;
     _date = stringToDataBySplit(_date);
-
+    // console.log(_doctor_id);
+    // console.log(_date);
     let order_data = (await Order.find({
         doctor_id: _doctor_id,
-        date: _date
+        time: _date
     }).exec()) || [];
-    console.log(_date);
-    console.log(order_data);
+    // let test_data = await Order.find({order_id : "O102"});
+    // console.log(test_data);
+    // console.log(order_data);
     let patient_data = (await Patient.find({
-        user_id: order_data.user_id,
+        user_id: order_data.map((value)=>value.user_id),
     }).exec()) || [];
-    console.log(patient_data);
+    // console.log(patient_data);
     var array = [];
-    _user_id = order_data.map((value)=>value.user_id).join(',');
-    _name = patient_data.map((value)=>value.name).join(',');
-    _time = order_data.map((value)=>value.time).join(',');
+    _user_id = order_data.map((value)=>value.user_id);
+    _name = patient_data.map((value)=>value.name);
+    _time = order_data.map((value)=>value.time);
+    // console.log(_user_id);
+    // console.log(_name);
+    // console.log(_time);
+
+    // array.push({_user_id,_name,_time});
     for(var i=0; i<_user_id.length; i++){
         array.push({user_id:_user_id[i],
                     name:_name[i],
                     time:_time[i]});
-        // array.push(_user_id[i]);
-        // array.push(_name[i]);
-        // array.push(_time[i]);
     }
     let r = {
         status: 100,
