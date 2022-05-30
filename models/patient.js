@@ -9,4 +9,4 @@ const patientSchema = mongoose.Schema({
     password: String
 });
 
-module.exports = mongoose.Model('patient', patientSchema);
+module.exports = mongoose.model('patient', patientSchema);
