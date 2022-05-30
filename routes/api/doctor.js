@@ -4,7 +4,8 @@ const express = require('express'),
 const Doctor = require('../../models/doctor'),
     Schedule = require('../../models/schedule'),
     Order = require('../../models/order'),
-    Patient = require('../../models/patient');
+    Patient = require('../../models/patient'),
+    Diagnosis = require('../../models/diagnosis');
 
 router.get('/info/details', async(req, res, next) => {
     let id = req.query.doctor_id;
@@ -63,8 +64,7 @@ router.get('/info/get', async(req, res, next) => {
 
     let _data = (await Doctor.find({
             name: _name,
-            // name: _name,
-            department: _department
+            dept_id: _department
         }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
@@ -119,17 +119,19 @@ router.post('/info/modify', async(req, res, next) => {
             photo: _photo,
             position: _position
         }
-    }, {}, function(err, data) { //debug function
-        if (err) {
-            console.log('Error in database')
-        } else if (!data) {
-            console.log('Not such data')
-            console.log(data)
-        } else {
-            console.log('Modify data success')
-            console.log(data)
-        }
-    });
+    }
+    // , {}, function(err, data) { //debug function
+    //     if (err) {
+    //         console.log('Error in database')
+    //     } else if (!data) {
+    //         console.log('Not such data')
+    //         console.log(data)
+    //     } else {
+    //         console.log('Modify data success')
+    //         console.log(data)
+    //     }
+    // }
+    );
 
     // return
     let r = {
@@ -144,21 +146,25 @@ router.post('/info/modify', async(req, res, next) => {
 // post: call
 router.post('/call', async(req, res, next) => {
     let _user_id = req.body.user_id;
-    console.log(_user_id);
+    
+    deletedOrder = await Order.findOne({user_id:_user_id});
+    console.log(deletedOrder);
 
     await Order.findOneAndRemove({
         user_id: _user_id // some problem here ---> one patient <-> one order_id 
-    }, {}, function(err, data) { //debug function
-        if (err) {
-            console.log('Error in database')
-        } else if (!data) {
-            console.log('Not such data')
-            console.log(data)
-        } else {
-            console.log('Remove data success')
-            console.log(data)
-        }
-    });
+    }
+    // , {}, function(err, data) { //debug function
+    //     if (err) {
+    //         console.log('Error in database')
+    //     } else if (!data) {
+    //         console.log('Not such data')
+    //         console.log(data)
+    //     } else {
+    //         console.log('Remove data success')
+    //         console.log(data)
+    //     }
+    // }
+    );
 
     // return
     let r = {
@@ -223,9 +229,9 @@ router.get('/patient_info/get', async(req, res, next) => {
 })
 
 
-const diagnosisDocToInterface = (interface) => {
+const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
-    let _timestamp = formatDate(now, 'yyyy-mm-dd');
+    // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
     if (interface !== null && interface !== undefined &&
         interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
@@ -234,7 +240,7 @@ const diagnosisDocToInterface = (interface) => {
             patient_id: interface.patient_id,
             doctor_id: interface.doctor_id,
             depart_id: interface.department,
-            timestamp: _timestamp,
+            timestamp: now, //_timestamp,
             diagnosis_message: interface.diagnosis_message,
             medicine_message: interface.medicine_message
         }
@@ -246,7 +252,10 @@ const diagnosisDocToInterface = (interface) => {
 router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
 
-    let doc = diagnosisDocToInterface(req.body);
+    let doc = diagnosisInterfaceToDoc(req.body);
+
+    console.log(doc);
+
     await Diagnosis.insertMany(doc);
 
     let r = {

@@ -1,7 +1,7 @@
 const express = require("express"),
     router = express.Router();
 
-const Admin = require("../../models/adminis"),
+const Admin = require("../../models/admin"),
     Doctor = require("../../models/doctor");
 
 

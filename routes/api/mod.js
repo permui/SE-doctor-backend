@@ -4,7 +4,7 @@ const express = require("express"),
     router = express.Router(),
     doctorRouter = require('./doctor'),
     announceRouter = require('./announce'), //,
-    adminisRouter = require('./adminis');
+    adminisRouter = require('./admin');
 // registerRouter = require('./register');
 
 router.use('/doctor', doctorRouter);
