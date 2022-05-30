@@ -2,14 +2,15 @@ const express = require("express"),
     router = express.Router();
 
 const Admin = require("../../models/adminis"),
-    Doctor = require("../../models/doctor");
+    Doctor = require("../../models/doctor"),
+    Schedule = require("../../models/schedule")
 
 function stringToData(dateString) {
     if (dateString) {
-        let year = dateString.slice(0, 4);
-        let month = dateString.slice(4, 6);
-        let date = dateString.slice(6, 8);
-        let time_date = new Date(year, month - 1, date);
+        var year = dateString.slice(0, 4);
+        var month = dateString.slice(4, 6);
+        var date = dateString.slice(6, 8);
+        var time_date = new Date(year, month - 1, date);
         return time_date;
     } else {
         console.log("data String null")
@@ -30,7 +31,7 @@ router.post('/schedule/upload', async(req, res, next) => {
 
     // modified
 
-    await Admin.findOneAndUpdate({
+    await Schedule.findOneAndUpdate({
         depart_id: _department
     }, {
         $set: {
