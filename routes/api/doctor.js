@@ -62,14 +62,35 @@ router.get('/info/get', async(req, res, next) => {
     let _page_num = req.query.page_num; // start from 1
 
     // search
-
-    let _data = (await Doctor.find({
+    
+    if(name !== null && dept_id !== null){
+        let _data = (await Doctor.find({
             name: _name,
             dept_id: _department
         }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
         .exec()) || [];
+    }else if(dept_id !== null){
+        let _data = (await Doctor.find({
+            dept_id: _department
+        }).sort({ doctor_id: 1 })
+        .skip((_page_num - 1) * _page_size)
+        .limit(_page_size) //page
+        .exec()) || [];
+    }else{
+        let _data = (await Doctor.find().sort({ doctor_id: 1 })
+        .skip((_page_num - 1) * _page_size)
+        .limit(_page_size) //page
+        .exec()) || [];
+    }
+//     let _data = (await Doctor.find({
+//             name: _name,
+//             dept_id: _department
+//         }).sort({ doctor_id: 1 })
+//         .skip((_page_num - 1) * _page_size)
+//         .limit(_page_size) //page
+//         .exec()) || [];
 
     let result = _data.map(doctorinfoToInterface);
 
