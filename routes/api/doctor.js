@@ -56,47 +56,30 @@ const doctorinfoToInterface = (doc) => {
 // get list of information
 router.get('/get', async(req, res, next) => {
     console.log("into info/get");
-    let _name = req.query.name;
+    let _name = req.query.doctor_name;
     let _department = req.query.department;
-    let _page_size = req.query.page_size;
-    let _page_num = req.query.page_num; // start from 1
+    let _page_size = req.query.pageSize;
+    let _page_num = req.query.current; // start from 1
+
+    _name = _name ? _name : {$regex: ".*"}
+    _department = _department ? _department : {$regex: ".*"}
 
     // search
     // console.log(_name, _department)
     console.log("name: ", _name)
     console.log("department: ", _department)
-    let _data
-    
-    if(_name !== null && _department !== null){
-        _data = (await Doctor.find({
-            name: _name,
-            dept_id: _department
-        }).sort({ doctor_id: 1 })
-        .skip((_page_num - 1) * _page_size)
-        .limit(_page_size) //page
-        .exec()) || [];
-    }else if(dept_id !== null){
-        _data = (await Doctor.find({
-            dept_id: _department
-        }).sort({ doctor_id: 1 })
-        .skip((_page_num - 1) * _page_size)
-        .limit(_page_size) //page
-        .exec()) || [];
-    }else{
-        _data = (await Doctor.find().sort({ doctor_id: 1 })
-        .skip((_page_num - 1) * _page_size)
-        .limit(_page_size) //page
-        .exec()) || [];
-    }
-//     let _data = (await Doctor.find({
-//             name: _name,
-//             dept_id: _department
-//         }).sort({ doctor_id: 1 })
-//         .skip((_page_num - 1) * _page_size)
-//         .limit(_page_size) //page
-//         .exec()) || [];
+    // console.log(_name)
 
-    // console.log(_data)
+    _data = (await Doctor.find({
+        name: _name,
+        dept_id: _department,
+    }).sort({ doctor_id: 1 })
+        .skip((_page_num - 1) * _page_size)
+        .limit(_page_size) //page
+        .exec()) || [];
+
+
+    console.log(_data)
     let result = _data.map(doctorinfoToInterface);
 
     // return
