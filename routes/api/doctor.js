@@ -54,7 +54,7 @@ const doctorinfoToInterface = (doc) => {
 };
 
 // get list of information
-router.get('/info/get', async(req, res, next) => {
+router.get('/get', async(req, res, next) => {
     console.log("into info/get");
     let _name = req.query.name;
     let _department = req.query.department;
@@ -62,7 +62,9 @@ router.get('/info/get', async(req, res, next) => {
     let _page_num = req.query.page_num; // start from 1
 
     // search
-    
+    // console.log(_name, _department)
+    console.log("name: ", _name)
+    console.log("department: ", _department)
     let _data
     
     if(_name !== null && _department !== null){
@@ -94,6 +96,7 @@ router.get('/info/get', async(req, res, next) => {
 //         .limit(_page_size) //page
 //         .exec()) || [];
 
+    // console.log(_data)
     let result = _data.map(doctorinfoToInterface);
 
     // return
