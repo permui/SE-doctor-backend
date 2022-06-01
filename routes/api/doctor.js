@@ -8,8 +8,9 @@ const Doctor = require('../../models/doctor'),
     Diagnosis = require('../../models/diagnosis');
 const { v4: uuidv4 } = require('uuid');
 
-router.get('/info/details', async(req, res, next) => {
+router.get('/details', async(req, res, next) => {
     let id = req.query.doctor_id;
+    console.log(id)
     let data = await Doctor.findOne({ doctor_id: id });
     let r = {
         status: 100,
@@ -45,7 +46,7 @@ const doctorinfoToInterface = (doc) => {
         return {
             doctor_id: doc.doctor_id,
             doctor_name: doc.name,
-            department: doc.dept_id,
+            dept_id: doc.dept_id,
             position: doc.position,
             moreUrl: "/api/user/" + doc.doctor_id + "/info"
         };
@@ -55,7 +56,7 @@ const doctorinfoToInterface = (doc) => {
 
 // get list of information
 router.get('/get', async(req, res, next) => {
-    console.log("into info/get");
+    console.log("into info/get"); 
     let _name = req.query.doctor_name;
     let _department = req.query.department;
     let _page_size = req.query.pageSize;
