@@ -63,8 +63,10 @@ router.get('/info/get', async(req, res, next) => {
 
     // search
     
-    if(name !== null && dept_id !== null){
-        let _data = (await Doctor.find({
+    let _data
+    
+    if(_name !== null && _department !== null){
+        _data = (await Doctor.find({
             name: _name,
             dept_id: _department
         }).sort({ doctor_id: 1 })
@@ -72,14 +74,14 @@ router.get('/info/get', async(req, res, next) => {
         .limit(_page_size) //page
         .exec()) || [];
     }else if(dept_id !== null){
-        let _data = (await Doctor.find({
+        _data = (await Doctor.find({
             dept_id: _department
         }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
         .exec()) || [];
     }else{
-        let _data = (await Doctor.find().sort({ doctor_id: 1 })
+        _data = (await Doctor.find().sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
         .exec()) || [];
