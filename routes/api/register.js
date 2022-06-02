@@ -51,7 +51,7 @@ const Order = require("../../models/order"),
 router.get('/get', async(req, res, next) => {
     let _date = req.query.date;
     let _doctor_id = req.query.doctor_id;
-    _date = stringToDataBySplit(_date);
+    // _date = stringToDataBySplit(_date);
     // console.log(_doctor_id);
     // console.log(_date);
     let order_data = (await Order.find({
