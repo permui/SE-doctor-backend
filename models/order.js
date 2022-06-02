@@ -7,7 +7,8 @@ const orderSchema = mongoose.Schema({
     doctor_id: String,
     date: Date,
     time: String, //[]
-    status: String
+    status: String,
+    comment: String
 });
 
 module.exports = mongoose.model('order', orderSchema);

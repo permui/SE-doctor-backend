@@ -8,8 +8,9 @@ const Doctor = require('../../models/doctor'),
     Diagnosis = require('../../models/diagnosis');
 const { v4: uuidv4 } = require('uuid');
 
-router.get('/info/details', async(req, res, next) => {
+router.get('/details', async(req, res, next) => {
     let id = req.query.doctor_id;
+    console.log(id)
     let data = await Doctor.findOne({ doctor_id: id });
     let r = {
         status: 100,
@@ -45,7 +46,7 @@ const doctorinfoToInterface = (doc) => {
         return {
             doctor_id: doc.doctor_id,
             doctor_name: doc.name,
-            department: doc.dept_id,
+            dept_id: doc.dept_id,
             position: doc.position,
             moreUrl: "/api/user/" + doc.doctor_id + "/info"
         };
@@ -54,23 +55,32 @@ const doctorinfoToInterface = (doc) => {
 };
 
 // get list of information
-router.get('/info/get', async(req, res, next) => {
-    console.log("into info/get");
-    let _name = req.query.name;
+router.get('/get', async(req, res, next) => {
+    console.log("into info/get"); 
+    let _name = req.query.doctor_name;
     let _department = req.query.department;
-    let _page_size = req.query.page_size;
-    let _page_num = req.query.page_num; // start from 1
+    let _page_size = req.query.pageSize;
+    let _page_num = req.query.current; // start from 1
+
+    _name = _name ? _name : {$regex: ".*"}
+    _department = _department ? _department : {$regex: ".*"}
 
     // search
+    // console.log(_name, _department)
+    console.log("name: ", _name)
+    console.log("department: ", _department)
+    // console.log(_name)
 
-    let _data = (await Doctor.find({
-            name: _name,
-            dept_id: _department
-        }).sort({ doctor_id: 1 })
+    _data = (await Doctor.find({
+        name: _name,
+        dept_id: _department,
+    }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
         .exec()) || [];
 
+
+    console.log(_data)
     let result = _data.map(doctorinfoToInterface);
 
     // return
