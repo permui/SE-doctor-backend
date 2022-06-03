@@ -122,7 +122,7 @@ router.post('/doctor/create', async(req, res, next) => {
         res.json(r);
         return;
     }
-    console.log("into /doctor/create")
+    console.log("into /doctor/create");
     let _doctor_id = req.body.doctor_id;
     let _name = req.body.name;
     let _gender = req.body.gender;
@@ -201,5 +201,122 @@ router.post('/doctor/delete', async(req, res, next) => {
 
     console.log(r);
     res.json(r);
-})
+});
+
+//post: create schedule
+router.post('/schedule/create', async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
+
+    console.log("into /schedule/create");
+    let _date = req.body.date;
+    let _time = req.body.time;
+    let _doctor_id = req.body.doctor_id;
+    let _depart_id = req.body.depart_id;
+    let _quota = req.body.quota;
+    
+    var msg = "success";//return message
+
+    //check if doctor_id already existed.
+    let duplicated_data = await Schedule.find({
+        date: _date,
+        time: _time,
+        doctor_id: _doctor_id,
+        depart_id: _depart_id
+    });
+    if(duplicated_data.length>0){
+        msg = "create schedule failed. schedule already existed.";
+    }else{
+        await Schedule.create({
+            date: _date,
+            time: _time,
+            doctor_id: _doctor_id,
+            depart_id: _depart_id,
+            quota: _quota
+        });
+    }
+
+    let r = {
+        status: 100,
+        msg: msg,
+        data: {}
+    };
+
+    console.log(r);
+    res.json(r);
+});
+
+//post: delete schedule
+router.post('/schedule/delete', async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
+    console.log("into /schedule/delete");
+    let _date = req.body.date;  //should be a string like 20220601
+    let _section = req.body.section;    //should be morning, afternoon or evening
+    let _doctor_id = req.body.doctor_id;
+
+    let deleted_data = await Schedule.find({//find the data that is to be deleted.
+        date : _date,
+        time : _section,
+        doctor_id : _doctor_id
+    });
+
+    console.log(deleted_data);
+
+    //check if schedule does not exist.
+    var msg = "success";
+    if(deleted_data.length==0){
+        msg = "deletion failed, such schedule does not exist."
+    }else{
+        await Schedule.remove({
+            date : _date,
+            time : _section,
+            doctor_id : _doctor_id
+        });
+    }
+
+    let r = {
+        status: 100,
+        msg: msg,
+        data: deleted_data
+    };
+
+    console.log(r);
+    res.json(r);
+});
+
+//get: get schedule according to dept_id(or department)
+router.get('/schedule/get', async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
+    console.log("into /schedule/get");
+
+    let _dept_id = req.query.dept_id;//should be a department name, like "dentistry".
+
+    var msg = "success";
+    let data = await Schedule.find({
+        depart_id : _dept_id
+    });
+
+    let r = {
+        status: 100,
+        msg: msg,
+        data: data
+    };
+
+    console.log(r);
+    res.json(r);
+});
 module.exports = router;
