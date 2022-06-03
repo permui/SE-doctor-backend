@@ -229,7 +229,7 @@ router.post('/schedule/create', async(req, res, next) => {
         depart_id: _depart_id
     });
     if(duplicated_data.length>0){
-        msg = "create schedule failed. schedule already existed.";
+        msg = "添加排班失败，排班已存在";
     }else{
         await Schedule.create({
             date: _date,
@@ -274,7 +274,7 @@ router.post('/schedule/delete', async(req, res, next) => {
     //check if schedule does not exist.
     var msg = "success";
     if(deleted_data.length==0){
-        msg = "deletion failed, such schedule does not exist."
+        msg = "删除排班失败，排班不存在"
     }else{
         await Schedule.remove({
             date : _date,
