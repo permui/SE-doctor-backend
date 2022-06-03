@@ -55,6 +55,12 @@ router.get("/get", async(req, res, next) => {
 });
 
 router.post("/post", async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
     const doc = announceInterfaceToDoc(req.body);
     await Announce.insertMany(doc);
 

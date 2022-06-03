@@ -4,6 +4,7 @@ const express = require("express"),
 const Admin = require("../../models/admin"),
     Doctor = require("../../models/doctor"),
     Schedule = require("../../models/schedule");
+const consts = require("./consts");
 
 function stringToData(dateString) {
     if (dateString) {
@@ -19,6 +20,12 @@ function stringToData(dateString) {
 
 // // not completed
 router.post('/schedule/upload', async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
     console.log("into /schedule/upload")
     let _schedule_id = req.body.schedule_id;
     let _department = req.body.department;
@@ -65,6 +72,12 @@ router.post('/schedule/upload', async(req, res, next) => {
 
 // post: info_change
 router.post('/doctor/info_change', async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
     console.log("into /doctor/info_change")
     let _doctor_id = req.body.doctor_id;
     let _department = req.body.department;
@@ -103,6 +116,12 @@ router.post('/doctor/info_change', async(req, res, next) => {
 
 //post: create doctor
 router.post('/doctor/create', async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
     console.log("into /doctor/create")
     let _doctor_id = req.body.doctor_id;
     let _name = req.body.name;
@@ -148,12 +167,21 @@ router.post('/doctor/create', async(req, res, next) => {
 
 //post: delete doctor
 router.post('/doctor/delete', async(req, res, next) => {
+    if (req.session.user?.role != consts.role.admin) {
+        let r = { status: 205, msg: "requester not an admin", data: {} };
+        console.log(r);
+        res.json(r);
+        return;
+    }
     console.log("into /doctor/delete");
     let _doctor_id = req.body.doctor_id;
+    console.log(_doctor_id);
 
     let deleted_data = await Doctor.find({//find the data that is to be deleted.
         doctor_id: _doctor_id
     });
+
+    console.log(deleted_data);
 
     //check if doctor_id does not exist.
     var msg = "success";

@@ -6,6 +6,7 @@ const express = require('express'),
   logger = require('morgan'),
   cookieParser = require('cookie-parser'),
   bodyParser = require('body-parser'),
+  session = require('express-session'),
   indexRouter = require('./routes/index'),
   apiRouter = require('./routes/api/mod'),
   mongoose = require('mongoose'),
@@ -38,6 +39,13 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser()); 
+app.use(
+    session({
+        secret: "se2022",
+        resave: false,
+        saveUninitialized: false,
+    })
+);
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
