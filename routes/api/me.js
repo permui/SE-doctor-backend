@@ -21,11 +21,20 @@ router.get('/', async (req, res, next) => {
     if (u.role == consts.role.admin) {
         let a = await Admin.findOne({ adminis_id: u.id });
         r = {
+            success: true,
             status: 100,
             msg: "success",
             data: {
-                ...a,
-                access: u.role
+                // ...a,
+                role: "admin",
+                name: a.name,
+                id: a.adminis_id,
+                gender: "admin-gender",
+                age: 0,
+                position: "admin-position",
+                department: "admin-department",
+                access: u.role,
+                avatar: "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png"
             }
         };
     } else if (u.role == consts.role.doctor) {
@@ -36,9 +45,9 @@ router.get('/', async (req, res, next) => {
             msg: "success",
             data: {
                 // ...d
-                role: "admin",
+                role: "doctor",
                 name: d.name,
-                doctor_id: d.doctor_id,
+                id: d.doctor_id,
                 gender: d.gender,
                 age: d.age,
                 position: d.position,
