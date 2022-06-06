@@ -49,14 +49,14 @@ const Order = require("../../models/order"),
     Patient = require("../../models/patient");
 // get
 router.get('/get', async(req, res, next) => {
-    let _date = req.query.time;
+    let _date = req.query.date;
     let _doctor_id = req.query.doctor_id;
     // _date = stringToDataBySplit(_date);
     console.log(_doctor_id);
     console.log(_date);
     let order_data = (await Order.find({
         doctor_id: _doctor_id,
-        time: _date 
+        date: _date
     }).exec()) || [];
     console.log(order_data);
     let patient_data = (await Patient.find({
@@ -71,7 +71,6 @@ router.get('/get', async(req, res, next) => {
     console.log(_name);
     console.log(_time);
 
-    // array.push({_user_id,_name,_time});
     for(var i=0; i<_user_id.length; i++){
         array.push({user_id:_user_id[i],
                     name:_name[i],
