@@ -225,12 +225,8 @@ router.get('/schedule/get', async(req, res, next) => {
         res.json(r);
         return;
     }
-    console.log("into /schedule/get");
 
-    let _dept_id = req.query.dept_id; //should be a department name, like "dentistry".
-    // let _date = req.query.date;
-    // let _section = req.query.time;
-    // let _doctor = req.query.doctor_id;
+    let _dept_id = req.query.dept_id;//should be a department name, like "dentistry".
 
     var msg = "success";
     // let data = Schedule; // ???
