@@ -360,14 +360,22 @@ router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
 
     let doc = diagnosisInterfaceToDoc(req.body);
-
+    await Order.findOneAndUpdate({
+        user_id : doc.patient_id,
+        doctor_id : doc.doctor_id,
+        status : "TRADE_SUCCESS"
+        },{
+            $set:{
+            status : "TRADE_FINISHED"
+            }
+        });
     console.log(doc);
 
     await Diagnosis.insertMany(doc);
 
     let r = {
         status: 100,
-        msg: "Permission denied"
+        msg: "诊断结果上传成功！"
     };
 
     console.log(r);

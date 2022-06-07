@@ -213,8 +213,8 @@ router.get('/schedule/get', async(req, res, next) => {
         return;
     }
     console.log("into /schedule/get");
-
     let _dept_id = req.query.dept_id;//should be a department name, like "dentistry".
+    console.log(_dept_id);
 
     var msg = "success";
     let data = await Schedule.find({
