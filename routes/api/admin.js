@@ -204,6 +204,19 @@ router.post('/schedule/delete', async(req, res, next) => {
     res.json(r);
 });
 
+const scheduleinfoToInterface = (doc) => {
+    if (doc !== null && doc !== undefined) {
+        return {
+            date: doc.date,
+            section: doc.time,
+            doctor_id: doc.doctor_id,
+            position: doc.position,
+            moreUrl: "/api/user/" + doc.doctor_id + "/info"
+        };
+    }
+    return doc;
+};
+
 //get: get schedule according to dept_id(or department)
 router.get('/schedule/get', async(req, res, next) => {
     if (req.session.user?.role != consts.role.admin) {
@@ -214,9 +227,14 @@ router.get('/schedule/get', async(req, res, next) => {
     }
     console.log("into /schedule/get");
 
-    let _dept_id = req.query.dept_id;//should be a department name, like "dentistry".
+    let _dept_id = req.query.dept_id; //should be a department name, like "dentistry".
+    // let _date = req.query.date;
+    // let _section = req.query.time;
+    // let _doctor = req.query.doctor_id;
 
     var msg = "success";
+    // let data = Schedule; // ???
+
     let data = await Schedule.find({
         depart_id : _dept_id
     });

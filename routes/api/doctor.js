@@ -84,12 +84,15 @@ router.get('/get', async(req, res, next) => {
     console.log(_data)
     let result = _data.map(doctorinfoToInterface);
 
+    let _all = (await Doctor.find({name: _name, dept_id: _department}))
+    let _count = _all.map(doctorinfoToInterface).length
+
     // return
     let r = {
         status: 100,
         msg: "success",
         data: {
-            return_count: 10,
+            return_count: _count,
             doctor_list: result
                 // [{
                 //     //not sure if this way works
