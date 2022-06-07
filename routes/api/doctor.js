@@ -247,7 +247,7 @@ router.post('/info/modify', async(req, res, next) => {
 
 // post: call
 router.post('/call', async(req, res, next) => {
-    let _user_id = req.body.user_id;
+    let _user_id = req.query.user_id;
 
     deletedOrder = await Order.findOne({ user_id: _user_id });
     console.log(deletedOrder);
@@ -341,16 +341,14 @@ router.get('/patient_info/get', async(req, res, next) => {
 
 const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
-    // let _timestamp = formatDate(now, 'yyyy-mm-dd');
-
-    if (interface !== null && interface !== undefined &&
-        interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
+    
+    if (interface !== null && interface !== undefined) {
         return {
             diagnosis_id: uuidv4(),
             patient_id: interface.patient_id,
             doctor_id: interface.doctor_id,
-            depart_id: interface.department,
-            timestamp: now, //_timestamp,
+            depart_id: interface.depart_id,
+            timestamp: now,
             diagnosis_message: interface.diagnosis_message,
             medicine_message: interface.medicine_message
         }
@@ -361,8 +359,11 @@ const diagnosisInterfaceToDoc = (interface) => {
 // get: patient_info
 router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
-
-    let doc = diagnosisInterfaceToDoc(req.body);
+    
+    // console.log(req.query)
+    let doc = diagnosisInterfaceToDoc(req.query);
+    console.log(doc);
+    
     await Order.findOneAndUpdate({
         user_id : doc.patient_id,
         doctor_id : doc.doctor_id,
@@ -372,8 +373,7 @@ router.post('/diagnostic_msg/upload', async(req, res, next) => {
             status : "TRADE_FINISHED"
             }
         });
-    console.log(doc);
-
+        
     await Diagnosis.insertMany(doc);
 
     let r = {
