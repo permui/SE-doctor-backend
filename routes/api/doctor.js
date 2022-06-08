@@ -77,39 +77,43 @@ const doctorinfoToInterface = (doc) => {
 
 // get list of information
 router.get('/get', async(req, res, next) => {
-    console.log("into info/get"); 
+    console.log("into info/get");
     let _name = req.query.doctor_name;
     let _department = req.query.department;
     let _page_size = req.query.pageSize;
     let _page_num = req.query.current; // start from 1
 
-    _name = _name ? _name : {$regex: ".*"}
-    _department = _department ? _department : {$regex: ".*"}
+    _name = _name ? _name : { $regex: ".*" }
+    _department = _department ? _department : { $regex: ".*" }
 
     // search
     // console.log(_name, _department)
     console.log("name: ", _name)
     console.log("department: ", _department)
-    // console.log(_name)
+        // console.log(_name)
 
     _data = (await Doctor.find({
-        name: _name,
-        dept_id: _department,
-    }).sort({ doctor_id: 1 })
+            name: _name,
+            dept_id: _department,
+        }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
         .exec()) || [];
 
 
-    console.log(_data)
+    // console.log(_data)
     let result = _data.map(doctorinfoToInterface);
 
-    // return
+    let _all = (await Doctor.find({ name: _name, dept_id: _department }))
+    let _count = _all.map(doctorinfoToInterface).length
+
+    console.log(_count)
+        // return
     let r = {
         status: 100,
         msg: "success",
         data: {
-            return_count: 10,
+            return_count: _count,
             doctor_list: result
                 // [{
                 //     //not sure if this way works
@@ -128,7 +132,7 @@ router.get('/get', async(req, res, next) => {
 
 //post: delete doctor
 router.delete('/delete', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ? .role != consts.role.admin) {
         let r = { status: 205, msg: "只有管理员才能删除！", data: {} };
         console.log(r);
         res.json(r);
@@ -138,7 +142,7 @@ router.delete('/delete', async(req, res, next) => {
     let _doctor_id = req.body.doctor_id;
     console.log(_doctor_id);
 
-    let deleted_data = await Doctor.find({//find the data that is to be deleted.
+    let deleted_data = await Doctor.find({ //find the data that is to be deleted.
         doctor_id: _doctor_id
     });
 
@@ -146,9 +150,9 @@ router.delete('/delete', async(req, res, next) => {
 
     //check if doctor_id does not exist.
     var msg = "success";
-    if(deleted_data.length==0){
+    if (deleted_data.length == 0) {
         msg = "deletion failed. doctor_id does not exist."
-    }else{
+    } else {
         await Doctor.remove({
             doctor_id: _doctor_id
         });
@@ -166,7 +170,7 @@ router.delete('/delete', async(req, res, next) => {
 
 //post: create doctor
 router.post('/create', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ? .role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
@@ -182,16 +186,18 @@ router.post('/create', async(req, res, next) => {
     let _password = req.body.password;
     let _intro = req.body.intro;
     let _photo = req.body.photo;
-    
-    var msg = "success";//return message
+
+    console.log(req.body)
+
+    var msg = "success"; //return message
 
     //check if doctor_id already existed.
     let duplicated_data = await Doctor.find({
         doctor_id: _doctor_id
     });
-    if(duplicated_data.length>0){
+    if (duplicated_data.length > 0) {
         msg = "create doctor failed. doctor_id already existed.";
-    }else{
+    } else {
         await Doctor.create({
             doctor_id: _doctor_id,
             name: _name,
@@ -264,7 +270,7 @@ router.post('/info/modify', async(req, res, next) => {
 
 // post: call
 router.post('/call', async(req, res, next) => {
-    let _user_id = req.body.user_id;
+    let _user_id = req.query.user_id;
 
     deletedOrder = await Order.findOne({ user_id: _user_id });
     console.log(deletedOrder);
@@ -358,16 +364,14 @@ router.get('/patient_info/get', async(req, res, next) => {
 
 const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
-    // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
-    if (interface !== null && interface !== undefined &&
-        interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
+    if (interface !== null && interface !== undefined) {
         return {
             diagnosis_id: uuidv4(),
             patient_id: interface.patient_id,
             doctor_id: interface.doctor_id,
-            depart_id: interface.department,
-            timestamp: now, //_timestamp,
+            depart_id: interface.depart_id,
+            timestamp: now,
             diagnosis_message: interface.diagnosis_message,
             medicine_message: interface.medicine_message
         }
@@ -378,18 +382,20 @@ const diagnosisInterfaceToDoc = (interface) => {
 // get: patient_info
 router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
- 
-    let doc = diagnosisInterfaceToDoc(req.body);
-    await Order.findOneAndUpdate({
-        user_id : doc.patient_id,
-        doctor_id : doc.doctor_id,
-        status : "TRADE_SUCCESS"
-        },{
-            $set:{
-            status : "TRADE_FINISHED"
-            }
-        });
+
+    // console.log(req.query)
+    let doc = diagnosisInterfaceToDoc(req.query);
     console.log(doc);
+
+    await Order.findOneAndUpdate({
+        user_id: doc.patient_id,
+        doctor_id: doc.doctor_id,
+        status: "TRADE_SUCCESS"
+    }, {
+        $set: {
+            status: "TRADE_FINISHED"
+        }
+    });
 
     await Diagnosis.insertMany(doc);
 
