@@ -26,15 +26,15 @@ router.post('/schedule/upload', async(req, res, next) => {
         res.json(r);
         return;
     }
-    console.log(req.query)
-    let _schedule_id = req.query.schedule_id;
-    let _department = req.query.department;
-    let _time = req.query.time;
-    let _doctor_id = req.query.doctor_id;
+    console.log("into /schedule/upload")
+    let _date = req.body.schedule_id;
+    let _department = req.body.department;
+    let _time = req.body.time;
+    let _doctor_id = req.body.doctor_id;
 
     // time transfer
 
-    let _date = stringToData(_schedule_id)
+    // let _date = stringToData(_schedule_id)
 
     // modified
 

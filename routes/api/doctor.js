@@ -26,10 +26,30 @@ router.get('/details', async(req, res, next) => {
 router.get("/schedule", async(req, res, next) => {
     let id = req.query.doctor_id;
     let data = await Schedule.find({ doctor_id: id });
+    let count = data.length;
+
+    let _date = data.map((value)=>value.date);              //排班日期
+    let _time = data.map((value)=>value.time);              //排班时段
+    let _department = data.map((value)=>value.depart_id);   //部门
+    let _availability = data.map((value)=>value.quota);     //余量
+
+    var arrangement_list = [];
+    for(var i=0; i<count; i++){ //将查询结果合并成一个arrangement_list
+        arrangement_list.push({
+            schedule_id : _date[i],
+            department : _department[i],
+            time : _time[i],
+            availability : _availability[i]
+        });
+    }
+
     let r = {
         status: 200,
         msg: "success",
-        data: data
+        data: {
+            return_count : count,
+            arrangement_list : arrangement_list
+        }
     };
     console.log(r);
     res.json(r);
@@ -57,25 +77,25 @@ const doctorinfoToInterface = (doc) => {
 
 // get list of information
 router.get('/get', async(req, res, next) => {
-    console.log("into info/get"); 
+    console.log("into info/get");
     let _name = req.query.doctor_name;
     let _department = req.query.department;
     let _page_size = req.query.pageSize;
     let _page_num = req.query.current; // start from 1
 
-    _name = _name ? _name : {$regex: ".*"}
-    _department = _department ? _department : {$regex: ".*"}
+    _name = _name ? _name : { $regex: ".*" }
+    _department = _department ? _department : { $regex: ".*" }
 
     // search
     // console.log(_name, _department)
     console.log("name: ", _name)
     console.log("department: ", _department)
-    // console.log(_name)
+        // console.log(_name)
 
     _data = (await Doctor.find({
-        name: _name,
-        dept_id: _department,
-    }).sort({ doctor_id: 1 })
+            name: _name,
+            dept_id: _department,
+        }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
         .exec()) || [];
@@ -112,7 +132,7 @@ router.get('/get', async(req, res, next) => {
 
 //post: delete doctor
 router.delete('/delete', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ? .role != consts.role.admin) {
         let r = { status: 205, msg: "只有管理员才能删除！", data: {} };
         console.log(r);
         res.json(r);
@@ -122,7 +142,7 @@ router.delete('/delete', async(req, res, next) => {
     let _doctor_id = req.query.doctor_id;
     console.log(_doctor_id);
 
-    let deleted_data = await Doctor.find({//find the data that is to be deleted.
+    let deleted_data = await Doctor.find({ //find the data that is to be deleted.
         doctor_id: _doctor_id
     });
 
@@ -130,9 +150,9 @@ router.delete('/delete', async(req, res, next) => {
 
     //check if doctor_id does not exist.
     var msg = "success";
-    if(deleted_data.length==0){
+    if (deleted_data.length == 0) {
         msg = "deletion failed. doctor_id does not exist."
-    }else{
+    } else {
         await Doctor.remove({
             doctor_id: _doctor_id
         });
@@ -150,7 +170,7 @@ router.delete('/delete', async(req, res, next) => {
 
 //post: create doctor
 router.post('/create', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ? .role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
@@ -175,9 +195,9 @@ router.post('/create', async(req, res, next) => {
     let duplicated_data = await Doctor.find({
         doctor_id: _doctor_id
     });
-    if(duplicated_data.length>0){
+    if (duplicated_data.length > 0) {
         msg = "create doctor failed. doctor_id already existed.";
-    }else{
+    } else {
         await Doctor.create({
             doctor_id: _doctor_id,
             name: _name,
@@ -344,7 +364,6 @@ router.get('/patient_info/get', async(req, res, next) => {
 
 const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
-    
     if (interface !== null && interface !== undefined) {
         return {
             diagnosis_id: uuidv4(),
@@ -362,21 +381,21 @@ const diagnosisInterfaceToDoc = (interface) => {
 // get: patient_info
 router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
-    
+
     // console.log(req.query)
     let doc = diagnosisInterfaceToDoc(req.query);
     console.log(doc);
-    
+
     await Order.findOneAndUpdate({
-        user_id : doc.patient_id,
-        doctor_id : doc.doctor_id,
-        status : "TRADE_SUCCESS"
-        },{
-            $set:{
-            status : "TRADE_FINISHED"
-            }
-        });
-        
+        user_id: doc.patient_id,
+        doctor_id: doc.doctor_id,
+        status: "TRADE_SUCCESS"
+    }, {
+        $set: {
+            status: "TRADE_FINISHED"
+        }
+    });
+
     await Diagnosis.insertMany(doc);
 
     let r = {
