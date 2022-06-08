@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const announceDocToInterface = (doc) => {
     if (doc !== null && doc !== undefined) {
         return {
-            id: doc.announce_id,
+            id: doc._id,
             title: doc.title,
             content: doc.content,
             poster: {
@@ -26,7 +26,6 @@ const announceInterfaceToDoc = (interface) => {
         interface.title !== undefined
     ) {
         return {
-            announce_id: uuidv4(),
             title: interface.title,
             content: interface.content,
             announcer: interface.poster,

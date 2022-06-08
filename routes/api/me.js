@@ -19,7 +19,7 @@ router.get('/', async (req, res, next) => {
     console.log(u)
     let r = {};
     if (u.role == consts.role.admin) {
-        let a = await Admin.findOne({ adminis_id: u.id });
+        let a = await Admin.findOne({ adminis_un: u.id });
         r = {
             success: true,
             status: 100,
@@ -28,7 +28,7 @@ router.get('/', async (req, res, next) => {
                 // ...a,
                 role: "admin",
                 name: a.name,
-                id: a.adminis_id,
+                id: a.adminis_un,
                 gender: "admin-gender",
                 age: 0,
                 position: "admin-position",

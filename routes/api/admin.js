@@ -3,8 +3,12 @@ const express = require("express"),
 
 const Admin = require("../../models/admin"),
     Doctor = require("../../models/doctor"),
-    Schedule = require("../../models/schedule");
+    Schedule = require("../../models/schedule"),
+    Department = require('../../models/department');
 const consts = require("./consts");
+
+const mongoose = require('mongoose'),
+    ObjectId = mongoose.Schema.Types.ObjectId;
 
 function stringToData(dateString) {
     if (dateString) {
@@ -80,14 +84,14 @@ router.post('/doctor/info_change', async(req, res, next) => {
     }
     console.log("into /doctor/info_change")
     let _doctor_id = req.body.doctor_id;
-    let _department = req.body.department;
+    let _department_id = req.body.department;
     let _position = req.body.position;
 
     await Doctor.findOneAndUpdate({
         doctor_id: _doctor_id
     }, {
         $set: {
-            dept_id: _department,
+            dept_id: ObjectId(_department_id),
             position: _position
         }
     }
@@ -204,6 +208,28 @@ router.post('/schedule/delete', async(req, res, next) => {
     res.json(r);
 });
 
+async function getDeptSchedules(dept_name) {
+    let all = await Schedule.find({});
+    let ret = [];
+    for (let s of all) {
+        let doctor = await Doctor.findById(s.doctor_id);
+        let dept = await Department.findById(doctor.dept_id);
+        if (dept.name == dept_name) {
+            let the_date = new Date();
+            let offset = s.date - the_date.getDay();
+            the_date.setDate(the_date.getDate() + offset);
+            ret.push({
+                date: the_date,
+                time: s.time,
+                doctor_id: s.doctor_id,
+                depart_id: dept_name,
+                quota: s.quota
+            });
+        }
+    }
+    return ret;
+}
+
 //get: get schedule according to dept_id(or department)
 router.get('/schedule/get', async(req, res, next) => {
     if (req.session.user?.role != consts.role.admin) {
@@ -213,13 +239,11 @@ router.get('/schedule/get', async(req, res, next) => {
         return;
     }
     console.log("into /schedule/get");
-    let _dept_id = req.query.dept_id;//should be a department name, like "dentistry".
-    console.log(_dept_id);
+    let dept_name = req.query.dept_id;//should be a department name, like "dentistry".
+    console.log(dept_name);
 
     var msg = "success";
-    let data = await Schedule.find({
-        depart_id : _dept_id
-    });
+    let data = await getDeptSchedules(dept_name);
 
     let r = {
         status: 100,

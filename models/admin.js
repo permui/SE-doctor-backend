@@ -1,7 +1,9 @@
 const m = require("mongoose");
 
+// YAY: change name adminis_id -> adminis_un
+// YAY: modification complete
 const adminisSchema = m.Schema({
-    adminis_id: String,
+    adminis_un: String,
     name: String,
     password: String,
 });

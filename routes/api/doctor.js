@@ -5,7 +5,8 @@ const Doctor = require('../../models/doctor'),
     Schedule = require('../../models/schedule'),
     Order = require('../../models/order'),
     Patient = require('../../models/patient'),
-    Diagnosis = require('../../models/diagnosis');
+    Diagnosis = require('../../models/diagnosis'),
+    Department = require('../../models/department');
 const { v4: uuidv4 } = require('uuid');
 const consts = require("./consts");
 
@@ -71,6 +72,9 @@ router.get('/get', async(req, res, next) => {
     console.log("name: ", _name)
     console.log("department: ", _department)
     // console.log(_name)
+
+    let dept_id = await Department.findOne({ name: _department });
+    // YAY: here
 
     _data = (await Doctor.find({
         name: _name,

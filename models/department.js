@@ -1,7 +1,10 @@
 const m = require('mongoose');
 
+/**
+ * delete dept_id
+ */
+
 const deptSchema = m.Schema({
-    dept_id: String,
     name: String,
     intro: String
 });

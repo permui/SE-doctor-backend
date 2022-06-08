@@ -9,7 +9,7 @@ async function checkUser(id, password) {
     console.log(id, password);
     let unp = { role: consts.role.unprivileged };
     if (id[0] == 'A') {
-        let a = await Admin.findOne({ adminis_id: id });
+        let a = await Admin.findOne({ adminis_un: id });
         if (a === null || a.password != password) return unp;
         return { role: consts.role.admin, id: id };
     } else if (id[0] == 'D') {
