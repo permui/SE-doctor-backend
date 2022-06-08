@@ -26,10 +26,30 @@ router.get('/details', async(req, res, next) => {
 router.get("/schedule", async(req, res, next) => {
     let id = req.query.doctor_id;
     let data = await Schedule.find({ doctor_id: id });
+    let count = data.length;
+
+    let _date = data.map((value)=>value.date);              //排班日期
+    let _time = data.map((value)=>value.time);              //排班时段
+    let _department = data.map((value)=>value.depart_id);   //部门
+    let _availability = data.map((value)=>value.quota);     //余量
+
+    var arrangement_list = [];
+    for(var i=0; i<count; i++){ //将查询结果合并成一个arrangement_list
+        arrangement_list.push({
+            schedule_id : _date[i],
+            department : _department[i],
+            time : _time[i],
+            availability : _availability[i]
+        });
+    }
+
     let r = {
         status: 200,
         msg: "success",
-        data: data
+        data: {
+            return_count : count,
+            arrangement_list : arrangement_list
+        }
     };
     console.log(r);
     res.json(r);
