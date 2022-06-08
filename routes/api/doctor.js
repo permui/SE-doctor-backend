@@ -358,7 +358,7 @@ const diagnosisInterfaceToDoc = (interface) => {
 // get: patient_info
 router.post('/diagnostic_msg/upload', async(req, res, next) => {
     console.log("into /diagnostic_msg/upload");
-
+ 
     let doc = diagnosisInterfaceToDoc(req.body);
     await Order.findOneAndUpdate({
         user_id : doc.patient_id,
