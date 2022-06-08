@@ -26,11 +26,11 @@ router.post('/schedule/upload', async(req, res, next) => {
         res.json(r);
         return;
     }
-    console.log("into /schedule/upload")
-    let _schedule_id = req.body.schedule_id;
-    let _department = req.body.department;
-    let _time = req.body.time;
-    let _doctor_id = req.body.doctor_id;
+    console.log(req.query)
+    let _schedule_id = req.query.schedule_id;
+    let _department = req.query.department;
+    let _time = req.query.time;
+    let _doctor_id = req.query.doctor_id;
 
     // time transfer
 
@@ -123,7 +123,7 @@ router.post('/schedule/create', async(req, res, next) => {
         return;
     }
 
-    console.log("into /schedule/create");
+    console.log(req.body);
     let _date = req.body.date;
     let _time = req.body.time;
     let _doctor_id = req.body.doctor_id;
@@ -133,23 +133,25 @@ router.post('/schedule/create', async(req, res, next) => {
     var msg = "success";//return message
 
     //check if doctor_id already existed.
-    let duplicated_data = await Schedule.find({
+    // let duplicated_data = await Schedule.find({
+    //     date: _date,
+    //     time: _time,
+    //     doctor_id: _doctor_id,
+    //     depart_id: _depart_id
+    // });
+    // if(duplicated_data.length>0){
+    //     msg = "添加排班失败，排班已存在";
+    // }else{
+
+    await Schedule.create({
         date: _date,
         time: _time,
         doctor_id: _doctor_id,
-        depart_id: _depart_id
+        depart_id: _depart_id,
+        quota: _quota
     });
-    if(duplicated_data.length>0){
-        msg = "添加排班失败，排班已存在";
-    }else{
-        await Schedule.create({
-            date: _date,
-            time: _time,
-            doctor_id: _doctor_id,
-            depart_id: _depart_id,
-            quota: _quota
-        });
-    }
+
+    // }
 
     let r = {
         status: 100,
@@ -169,7 +171,7 @@ router.post('/schedule/delete', async(req, res, next) => {
         res.json(r);
         return;
     }
-    console.log("into /schedule/delete");
+    console.log(req.body);
     let _date = req.body.date;  //should be a string like 20220601
     let _section = req.body.section;    //should be morning, afternoon or evening
     let _doctor_id = req.body.doctor_id;
@@ -219,12 +221,12 @@ const scheduleinfoToInterface = (doc) => {
 
 //get: get schedule according to dept_id(or department)
 router.get('/schedule/get', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
-        let r = { status: 205, msg: "requester not an admin", data: {} };
-        console.log(r);
-        res.json(r);
-        return;
-    }
+    // if (req.session.user?.role != consts.role.admin) {
+    //     let r = { status: 205, msg: "requester not an admin", data: {} };
+    //     console.log(r);
+    //     res.json(r);
+    //     return;
+    // }
 
     let _dept_id = req.query.dept_id;//should be a department name, like "dentistry".
 

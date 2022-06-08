@@ -1,7 +1,7 @@
 const m = require("mongoose");
 
 const scheduleSchema = m.Schema({
-    date: Date,
+    date: String,
     time: String, // [morning, afternoon, evening]
     doctor_id: String,
     depart_id: String,

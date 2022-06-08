@@ -81,12 +81,13 @@ router.get('/get', async(req, res, next) => {
         .exec()) || [];
 
 
-    console.log(_data)
+    // console.log(_data)
     let result = _data.map(doctorinfoToInterface);
 
     let _all = (await Doctor.find({name: _name, dept_id: _department}))
     let _count = _all.map(doctorinfoToInterface).length
 
+    console.log(_count)
     // return
     let r = {
         status: 100,
@@ -118,7 +119,7 @@ router.delete('/delete', async(req, res, next) => {
         return;
     }
     console.log("into /doctor/delete");
-    let _doctor_id = req.body.doctor_id;
+    let _doctor_id = req.query.doctor_id;
     console.log(_doctor_id);
 
     let deleted_data = await Doctor.find({//find the data that is to be deleted.
@@ -165,6 +166,8 @@ router.post('/create', async(req, res, next) => {
     let _password = req.body.password;
     let _intro = req.body.intro;
     let _photo = req.body.photo;
+
+    console.log(req.body)
     
     var msg = "success";//return message
 
@@ -201,10 +204,10 @@ router.post('/create', async(req, res, next) => {
 // post: modify
 router.post('/info/modify', async(req, res, next) => {
     let _doctor_id = req.body.doctor_id;
-    let _doctor_name = req.body.doctor_name;
+    let _doctor_name = req.body.name;
     let _gender = req.body.gender;
     let _age = req.body.age;
-    let _department = req.body.department;
+    let _department = req.body.dept_id;
     let _photo = req.body.photo;
     let _position = req.body.position;
 

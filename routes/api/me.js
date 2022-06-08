@@ -32,7 +32,7 @@ router.get('/', async (req, res, next) => {
                 gender: "admin-gender",
                 age: 0,
                 position: "admin-position",
-                department: "admin-department",
+                department: "管理员",
                 access: u.role,
                 avatar: "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png"
             }
