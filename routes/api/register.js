@@ -49,7 +49,7 @@ const Order = require("../../models/order"),
     Patient = require("../../models/patient");
 // get
 router.get('/get', async(req, res, next) => {
-    let _date = req.query.date;
+    let _date = req.query.date_curr;
     let _doctor_id = req.query.doctor_id;
     // _date = stringToDataBySplit(_date);
     console.log(_doctor_id);
