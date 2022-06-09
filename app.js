@@ -19,10 +19,11 @@ const express = require('express'),
 //     pass: process.env.ME_CONFIG_MONGODB_PASSWORD,
 // };
 
-let uri = "mongodb://localhost:27017/test";
+let uri = "mongodb://docker:yzhblind@yzhblind.top:27017";
 let options = {
-    user: "ReadWriter",
-    pass: "ReadWriter"
+    dbName: "test2",
+    user: "docker",
+    pass: "yzhblind"
 };
 mongoose.connect(uri, options);
 mongoose.connection.once('open', () => {
