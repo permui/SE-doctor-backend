@@ -13,7 +13,8 @@ async function checkUser(id, password) {
         if (a === null || a.password != password) return unp;
         return { role: consts.role.admin, id: id };
     } else if (id[0] == 'D') {
-        let d = await Doctor.findOne({ doctor_id: id });
+        let d = await Doctor.findOne({ doctor_un: id });
+        // let d = await Doctor.findOne({ name : id });
         if (d === null || d.password != password) return unp;
         return { role: consts.role.doctor, id: id };
     } else return unp;
