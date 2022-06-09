@@ -53,7 +53,7 @@ router.get('/details', async(req, res, next) => {
 });
 
 
-const scheduleDocToInterface = (doc) => {
+const scheduleDocToInterface = async (doc) => {
     if (doc !== null && doc !== undefined) {
         let the_date = new Date();
         let offset = doc.date - the_date.getDay();
@@ -96,7 +96,7 @@ router.get("/schedule", async(req, res, next) => {
 // wyp add the following function
 // not completed, if paging is needed
 
-const doctorinfoToInterface = (doc) => {
+const doctorinfoToInterface = async (doc) => {
     if (doc !== null && doc !== undefined) {
         let depart_entry = await Department.findOne({ name: _department });
 
@@ -435,7 +435,7 @@ router.get('/patient_info/get', async(req, res, next) => {
 // };
 
 // TODO: YANGRQ modified here
-const diagnosisInterfaceToDoc = (interface) => {
+const diagnosisInterfaceToDoc = async (interface) => {
     const now = new Date();
     // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
