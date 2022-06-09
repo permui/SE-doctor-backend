@@ -19,9 +19,6 @@ const express = require('express'),
 //     pass: process.env.ME_CONFIG_MONGODB_PASSWORD,
 // };
 
-// let uri = "mongodb://localhost:27017/test";
-// let uri = "mongodb://userServer:userServer@yzhblind.top:27017";
-// let uri = "mongodb://docker:yzhblind@yzhblind.top:27017";
 let uri = "mongodb://docker:yzhblind@yzhblind.top:27017";
 let options = {
     user: "docker",
