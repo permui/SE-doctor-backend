@@ -442,25 +442,20 @@ const diagnosisInterfaceToDoc = async (interface) => {
 
     const patient_data = await Patient.findOne({ name: interface.patient_id });
     const doctor_data = await Doctor.findOne({ doctor_un: interface.doctor_id });
-    const depart_data = await Department.findOne({ name: interface.department });
+    const depart_data = await Department.findOne({ name: interface.depart_id });
 
     const { _id: patient_id } = patient_data;
     const { _id: doctor_id } = doctor_data;
     const { _id: depart_id } = depart_data;
 
-    if (interface !== null && interface !== undefined &&
-        interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
-        return {
-            // diagnosis_id: uuidv4(),
-            patient_id,
-            doctor_id,
-            depart_id,
-            timestamp: now, //_timestamp,
-            diagnosis_message: interface.diagnosis_message,
-            medicine_message: interface.medicine_message
-        }
-    }
-    return undefined;
+    const doc = {
+        patient_id,
+        doctor_id,
+        depart_id,
+        timestamp: now, //_timestamp,
+        diagnosis_message: interface.diagnosis_message,
+        medicine_message: interface.medicine_message
+    };
 };
 
 // get: patient_info
