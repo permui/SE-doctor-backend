@@ -19,25 +19,14 @@
 //     return then;
 // };
 
-function stringToDataBySplit(dateString) {
+function stringToDateBySplit(dateString) {
     if (dateString) {
-        // let timearray = dateString.split('-');
-        let timearray = dateString.replace(/-/g,'/');
-        // var year = timearray[0];
-        // var month = timearray[1];
-        // var date = timearray[2];
-        // console.log(year);
-        // console.log(month);
-        // console.log(date);
-        // var time_date = new Date(year, month - 1, date+1);
-        console.log(timearray);
-        var time_date = new Date(timearray);
-        console.log(time_date);
-        var time_date_ISO = time_date.toISOString();
-        console.log(time_date_ISO);
-        return time_date_ISO;
+        let y = dateString.slice(0, 4);
+        let m = dateString.slice(4, 6);
+        let d = dateString.slice(6, 8);
+        return new Date(y, m - 1, d);
     } else {
-        console.log("data String null")
+        console.log("date String null")
     }
 }
 
@@ -66,10 +55,15 @@ router.get('/get', async (req, res, next) => {
     }
 
     let { _id: doctor_id } = doctor_data;
+    const day = stringToDateBySplit(date);
+    const day_add_1 = day.setDate(day.getDate() + 1);
 
     let order_data = (await Order.find({
         doctor_id: doctor_id,
-        date: date
+        date: {
+            $gte: day,
+            $lt: day_add_1,
+        }
     }).exec()) || [];
 
     console.log(`/register/get order data ${order_data}`);
@@ -82,7 +76,16 @@ router.get('/get', async (req, res, next) => {
     var array = [];
     _user_id = order_data.map((value)=>value.user_id);
     _name = patient_data.map((value)=>value.name);
-    _time = order_data.map((value)=>value.time);
+    _time = order_data.map((value) => {
+        let time =  new Date(value.time);
+        if (time.getHours() < 12) {
+            return "morning";
+        } else if (time.getHours() < 18) {
+            return "afternoon";
+        } else {
+            return "evening";
+        }
+    });
     console.log(_user_id);
     console.log(_name);
     console.log(_time);
