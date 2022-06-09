@@ -60,7 +60,7 @@ const scheduleDocToInterface = async (doc) => {
         the_date.setDate(the_date.getDate() + offset);
 
         let doctor_entry = await Doctor.findById(doc.doctor_id);
-        let dept_entry = await Department.findById(doc.depart_id); // may need change
+        let dept_entry = await Department.findById(doctor_entry.dept_id); // may need change
         return {
             date: the_date,
             time: doc.time,
@@ -72,14 +72,14 @@ const scheduleDocToInterface = async (doc) => {
     return doc;
 };
 
-// YAY: 
+// YAY: test ok
 router.get("/schedule", async(req, res, next) => {
     let id = req.query.doctor_id;
-    let doctor_entry = Doctor.findOne({
+    let doctor_entry = await Doctor.findOne({
         doctor_un: id
-    })
+    });
     let data = await Schedule.find({ doctor_id: doctor_entry._id });
-    const result = data.map(scheduleDocToInterface);
+    const result = await Promise.all(data.map(scheduleDocToInterface));
 
     let r = {
         status: 200,
@@ -99,7 +99,7 @@ router.get("/schedule", async(req, res, next) => {
 
 const doctorinfoToInterface = async (doc) => {
     if (doc !== null && doc !== undefined) {
-        let depart_entry = await Department.findOne({ name: _department });
+        let depart_entry = await Department.findById(doc.dept_id);
 
         return {
             doctor_id: doc.doctor_un,
@@ -112,45 +112,69 @@ const doctorinfoToInterface = async (doc) => {
     return doc;
 };
 
+// YAY: test ok
 // get list of information
 router.get('/get', async(req, res, next) => {
     console.log("into info/get");
-    let _name = req.query.doctor_name;
+    let _name = req.query.name;
     let _department = req.query.department;
     let _page_size = req.query.pageSize;
     let _page_num = req.query.current; // start from 1
 
-    _name = _name ? _name : { $regex: ".*" }
-    _department = _department ? _department : { $regex: ".*" }
+    // _name = _name ? _name : { $regex: ".*" }
+    // _department = _department ? _department : { $regex: ".*" }
 
     // search
     // console.log(_name, _department)
     console.log("name: ", _name)
     console.log("department: ", _department)
+
+    let result = await Doctor.aggregate([
+        {
+            $lookup: {
+                from: "departments",
+                localField: "dept_id",
+                foreignField: "_id",
+                as: "dept_name"
+            }
+        },
+    ]);
+
+    let new_res = [];
+    for (let d of result) {
+        if (_name && d.name != _name) continue;
+        if (_department && d.dept_name[0].name != _department) continue;
+        new_res.push(d);
+    }
+
+    result = await Promise.all(new_res.map(doctorinfoToInterface));
+
         // console.log(_name)
 
     // let dept_id = await Department.findOne({ name: _department });
-    let depart_entry = await Department.findOne({ name: _department });
-    // YAY: here
+    // let depart_entry = await Department.findOne({ name: _department });
+    // // YAY: here
 
-    _data = (await Doctor.find({
-            name: _name,
-            dept_id: depart_entry._id,
-        }).sort({ doctor_id: 1 })
-        .skip((_page_num - 1) * _page_size)
-        .limit(_page_size) //page
-        .exec()) || [];
+    // _data = (await Doctor.find({
+    //         name: _name,
+    //         dept_id: depart_entry._id,
+    //     }).sort({ doctor_id: 1 })
+    //     .skip((_page_num - 1) * _page_size)
+    //     .limit(_page_size) //page
+    //     .exec()) || [];
 
 
-    console.log(_data)
-    let result = _data.map(doctorinfoToInterface);
+    // console.log(_data)
+    // let result = _data.map(doctorinfoToInterface);
+
+    
 
     // return
     let r = {
         status: 100,
         msg: "success",
         data: {
-            return_count: 10,
+            return_count: result.length,
             doctor_list: result
                 // [{
                 //     //not sure if this way works
@@ -167,6 +191,7 @@ router.get('/get', async(req, res, next) => {
     res.json(r);
 });
 
+// YAY: test ok
 //post: delete doctor
 router.delete('/delete', async(req, res, next) => {
     if (req.session.user ?.role != consts.role.admin) {
@@ -207,6 +232,8 @@ router.delete('/delete', async(req, res, next) => {
     res.json(r);
 })
 
+
+// YAY: test ok
 //post: create doctor
 router.post('/create', async(req, res, next) => {
     if (req.session.user ?.role != consts.role.admin) {
@@ -232,25 +259,30 @@ router.post('/create', async(req, res, next) => {
         doctor_un: _doctor_id
     })
 
+
     //check if doctor_id already existed.
     // let duplicated_data = await Doctor.find({
     //     doctor_id: _doctor_id
     // });
-    if (duplicated_data.length > 0) {
+    if (duplicated_data) {
         msg = "create doctor failed. doctor_id already existed.";
     } else {
         let depart_entry = await Department.findOne({ name: _dept_id });
-        await Doctor.create({
-            doctor_un: _doctor_id,
-            name: _name,
-            gender: _gender,
-            age: _age,
-            dept_id: depart_entry._id,
-            position: _position,
-            password: _password,
-            intro: _intro,
-            photo: _photo,
-        });
+        if (!depart_entry) {
+            msg = "department not found.";
+        } else {
+            await Doctor.create({
+                doctor_un: _doctor_id,
+                name: _name,
+                gender: _gender,
+                age: _age,
+                dept_id: depart_entry._id,
+                position: _position,
+                password: _password,
+                intro: _intro,
+                photo: _photo,
+            });
+        }
     }
 
     let r = {
