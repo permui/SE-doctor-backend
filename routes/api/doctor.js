@@ -10,27 +10,80 @@ const Doctor = require('../../models/doctor'),
 const { v4: uuidv4 } = require('uuid');
 const consts = require("./consts");
 
+const mongoose = require('mongoose'),
+    ObjectId = mongoose.Schema.Types.ObjectId;
+
+
+
+const doctorDocToInterface = (doc) => {
+    if (doc !== null && doc !== undefined) {
+        let depart_entry = Department.findById(doc.dept_id)
+
+        return {
+            doctor_id: doc.doctor_un,
+            name: doc.name,
+            gender: doc.gender,
+            age: doc.age,
+            dept_id: depart_entry.name,
+            position: doc.position,
+            password: doc.password,
+            intro: doc.intro,
+            photo: doc.photo,
+        };
+    }
+    return doc;
+};
+
+
+
 router.get('/details', async(req, res, next) => {
     let id = req.query.doctor_id;
     console.log(id)
-    let data = await Doctor.findOne({ doctor_id: id });
+        // let data = await Doctor.findOne({ doctor_id: id });
+    let data = await Doctor.findOne({ doctor_un: id });
+    const result = data.map(doctorDocToInterface);
+
     let r = {
         status: 100,
         msg: "success",
-        data: data
+        data: result
     };
     console.log(r);
     res.json(r);
 });
 
-//Luyao Ma
+
+const scheduleDocToInterface = (doc) => {
+    if (doc !== null && doc !== undefined) {
+        let the_date = new Date();
+        let offset = doc.date - the_date.getDay();
+        the_date.setDate(the_date.getDate() + offset);
+
+        let doctor_entry = await Doctor.findById(doc.doctor_id);
+        let dept_entry = await Department.findById(doc.depart_id); // may need change
+        return {
+            date: the_date,
+            time: doc.time,
+            doctor_id: doctor_entry.doctor_un,
+            depart_id: dept_entry.name,
+            quota: doc.quota
+        };
+    }
+    return doc;
+};
+
 router.get("/schedule", async(req, res, next) => {
     let id = req.query.doctor_id;
-    let data = await Schedule.find({ doctor_id: id });
+    let doctor_entry = Doctor.findOne({
+        doctor_un: id
+    })
+    let data = await Schedule.find({ doctor_id: doctor_entry._id });
+    const result = data.map(scheduleDocToInterface);
+
     let r = {
         status: 200,
         msg: "success",
-        data: data
+        data: result
     };
     console.log(r);
     res.json(r);
@@ -45,12 +98,14 @@ router.get("/schedule", async(req, res, next) => {
 
 const doctorinfoToInterface = (doc) => {
     if (doc !== null && doc !== undefined) {
+        let depart_entry = await Department.findOne({ name: _department });
+
         return {
-            doctor_id: doc.doctor_id,
+            doctor_id: doc.doctor_un,
             doctor_name: doc.name,
-            dept_id: doc.dept_id,
+            dept_id: depart_entry.name,
             position: doc.position,
-            moreUrl: "/api/user/" + doc.doctor_id + "/info"
+            moreUrl: "/api/user/" + doc.doctor_un + "/info"
         };
     }
     return doc;
@@ -58,28 +113,29 @@ const doctorinfoToInterface = (doc) => {
 
 // get list of information
 router.get('/get', async(req, res, next) => {
-    console.log("into info/get"); 
+    console.log("into info/get");
     let _name = req.query.doctor_name;
     let _department = req.query.department;
     let _page_size = req.query.pageSize;
     let _page_num = req.query.current; // start from 1
 
-    _name = _name ? _name : {$regex: ".*"}
-    _department = _department ? _department : {$regex: ".*"}
+    _name = _name ? _name : { $regex: ".*" }
+    _department = _department ? _department : { $regex: ".*" }
 
     // search
     // console.log(_name, _department)
     console.log("name: ", _name)
     console.log("department: ", _department)
-    // console.log(_name)
+        // console.log(_name)
 
-    let dept_id = await Department.findOne({ name: _department });
+    // let dept_id = await Department.findOne({ name: _department });
+    let depart_entry = await Department.findOne({ name: _department });
     // YAY: here
 
     _data = (await Doctor.find({
-        name: _name,
-        dept_id: _department,
-    }).sort({ doctor_id: 1 })
+            name: _name,
+            dept_id: depart_entry._id,
+        }).sort({ doctor_id: 1 })
         .skip((_page_num - 1) * _page_size)
         .limit(_page_size) //page
         .exec()) || [];
@@ -112,7 +168,7 @@ router.get('/get', async(req, res, next) => {
 
 //post: delete doctor
 router.delete('/delete', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ?.role != consts.role.admin) {
         let r = { status: 205, msg: "只有管理员才能删除！", data: {} };
         console.log(r);
         res.json(r);
@@ -122,26 +178,28 @@ router.delete('/delete', async(req, res, next) => {
     let _doctor_id = req.body.doctor_id;
     console.log(_doctor_id);
 
-    let deleted_data = await Doctor.find({//find the data that is to be deleted.
-        doctor_id: _doctor_id
+    let deleted_data = await Doctor.find({ //find the data that is to be deleted.
+        doctor_un: _doctor_id
     });
 
     console.log(deleted_data);
 
     //check if doctor_id does not exist.
     var msg = "success";
-    if(deleted_data.length==0){
+    if (deleted_data.length == 0) {
         msg = "deletion failed. doctor_id does not exist."
-    }else{
+    } else {
         await Doctor.remove({
-            doctor_id: _doctor_id
+            doctor_un: _doctor_id
         });
     }
+
+    let result = deleted_data.map(doctorDocToInterface);
 
     let r = {
         status: 100,
         msg: msg,
-        data: deleted_data
+        data: result
     };
 
     console.log(r);
@@ -150,7 +208,7 @@ router.delete('/delete', async(req, res, next) => {
 
 //post: create doctor
 router.post('/create', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ?.role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
@@ -166,22 +224,27 @@ router.post('/create', async(req, res, next) => {
     let _password = req.body.password;
     let _intro = req.body.intro;
     let _photo = req.body.photo;
-    
-    var msg = "success";//return message
+
+    var msg = "success"; //return message
+
+    let duplicated_data = await Doctor.findOne({
+        doctor_un: _doctor_id
+    })
 
     //check if doctor_id already existed.
-    let duplicated_data = await Doctor.find({
-        doctor_id: _doctor_id
-    });
-    if(duplicated_data.length>0){
+    // let duplicated_data = await Doctor.find({
+    //     doctor_id: _doctor_id
+    // });
+    if (duplicated_data.length > 0) {
         msg = "create doctor failed. doctor_id already existed.";
-    }else{
+    } else {
+        let depart_entry = await Department.findOne({ name: _dept_id });
         await Doctor.create({
-            doctor_id: _doctor_id,
+            doctor_un: _doctor_id,
             name: _name,
             gender: _gender,
             age: _age,
-            dept_id: _dept_id,
+            dept_id: depart_entry._id,
             position: _position,
             password: _password,
             intro: _intro,
@@ -211,14 +274,16 @@ router.post('/info/modify', async(req, res, next) => {
 
     // modified
 
+    let depart_entry = await Department.findOne({ name: _department });
+
     await Doctor.findOneAndUpdate({
-            doctor_id: _doctor_id
+            doctor_un: _doctor_id
         }, {
             $set: {
                 name: _doctor_name,
                 gender: _gender,
                 age: _age,
-                dept_id: _department, // should not be uuidv4 here?
+                dept_id: depart_entry._id, // should not be uuidv4 here?
                 photo: _photo,
                 position: _position
             }
@@ -248,10 +313,10 @@ router.post('/info/modify', async(req, res, next) => {
 
 // post: call
 router.post('/call', async(req, res, next) => {
-    let {user_id: name} = req.body;
+    let { user_id: name } = req.body;
 
     console.log(name);
-    
+
     // yangrq modified here
     let patient = await Patient.findOne({ name: name }).exec();
     let patient_id = patient._id;
@@ -305,7 +370,7 @@ const patientDocToInterface = (doc) => {
 // get: patient_info
 // TODO: YANGRQ modified here
 router.get('/patient_info/get', async(req, res, next) => {
-    let {user_id: user_name} = req.query;
+    let { user_id: user_name } = req.query;
 
     let patient_data = await Patient.findOne({
         name: user_name
@@ -328,6 +393,7 @@ router.get('/patient_info/get', async(req, res, next) => {
     console.log(`doctor data is ${doctor_data}`);
 
     let { dept_id } = doctor_data;
+    // let department_data = await Department.findOne({ _id: dept_id });
     let department_data = await Department.findById(dept_id).exec();
 
     console.log(`depart data is ${department_data}`);
@@ -348,8 +414,28 @@ router.get('/patient_info/get', async(req, res, next) => {
     res.json(r);
 });
 
+
+// const diagnosisInterfaceToDoc = (interface) => {
+//     const now = new Date();
+//     // let _timestamp = formatDate(now, 'yyyy-mm-dd');
+
+//     if (interface !== null && interface !== undefined &&
+//         interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
+//         return {
+//             // diagnosis_id: //uuidv4(),
+//             patient_id: ObjectId(interface.patient_id),
+//             doctor_id: ObjectId(interface.doctor_id),
+//             depart_id: ObjectId(interface.department),
+//             timestamp: now, //_timestamp,
+//             diagnosis_message: interface.diagnosis_message,
+//             medicine_message: interface.medicine_message
+//         }
+//     }
+//     return undefined;
+// };
+
 // TODO: YANGRQ modified here
-const diagnosisInterfaceToDoc = async (interface) => {
+const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
     // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
@@ -364,7 +450,7 @@ const diagnosisInterfaceToDoc = async (interface) => {
     if (interface !== null && interface !== undefined &&
         interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
         return {
-            diagnosis_id: uuidv4(),
+            // diagnosis_id: uuidv4(),
             patient_id,
             doctor_id,
             depart_id,
@@ -382,14 +468,14 @@ router.post('/diagnostic_msg/upload', async(req, res, next) => {
 
     let doc = diagnosisInterfaceToDoc(req.body);
     await Order.findOneAndUpdate({
-        user_id : doc.patient_id,
-        doctor_id : doc.doctor_id,
-        status : "TRADE_SUCCESS"
-        },{
-            $set:{
-            status : "TRADE_FINISHED"
-            }
-        });
+        user_id: doc.patient_id,
+        doctor_id: doc.doctor_id,
+        status: "TRADE_SUCCESS"
+    }, {
+        $set: {
+            status: "TRADE_FINISHED"
+        }
+    });
     console.log(doc);
 
     await Diagnosis.insertMany(doc);
