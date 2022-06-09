@@ -15,9 +15,9 @@ const mongoose = require('mongoose'),
 
 
 
-const doctorDocToInterface = (doc) => {
+const doctorDocToInterface = async (doc) => {
     if (doc !== null && doc !== undefined) {
-        let depart_entry = Department.findById(doc.dept_id)
+        let depart_entry = await Department.findById(doc.dept_id)
 
         return {
             doctor_id: doc.doctor_un,
@@ -41,7 +41,7 @@ router.get('/details', async(req, res, next) => {
     console.log(id)
         // let data = await Doctor.findOne({ doctor_id: id });
     let data = await Doctor.findOne({ doctor_un: id });
-    const result = doctorDocToInterface(data);
+    const result = await doctorDocToInterface(data);
 
     let r = {
         status: 100,
@@ -295,6 +295,7 @@ router.post('/create', async(req, res, next) => {
     res.json(r);
 });
 
+// YAY: test ok
 // post: modify
 router.post('/info/modify', async(req, res, next) => {
     let _doctor_id = req.body.doctor_id;
@@ -337,13 +338,14 @@ router.post('/info/modify', async(req, res, next) => {
     // return
     let r = {
         status: 100,
-        msg: "Permission denied",
+        msg: "success",
     };
 
     console.log(r);
     res.json(r);
 });
 
+// YAY: test ok, running
 // post: call
 router.post('/call', async(req, res, next) => {
     let { user_id: name } = req.body;
@@ -351,7 +353,7 @@ router.post('/call', async(req, res, next) => {
     console.log(name);
 
     // yangrq modified here
-    let patient = await Patient.findOne({ name: name }).exec();
+    let patient = await Patient.findOne({ name: name });
     let patient_id = patient._id;
 
     deletedOrder = await Order.findOne({ user_id: patient_id });
@@ -376,7 +378,7 @@ router.post('/call', async(req, res, next) => {
     // return
     let r = {
         status: 100,
-        msg: "Permission denied",
+        msg: "success",
     };
 
     console.log(r);
