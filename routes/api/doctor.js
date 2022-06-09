@@ -307,6 +307,9 @@ router.post('/info/modify', async(req, res, next) => {
     let _position = req.body.position;
 
     // modified
+    let depart_entry = await Department.findOne({
+        name: _department
+    })
 
     let depart_entry = await Department.findOne({ name: _department });
 
@@ -356,11 +359,11 @@ router.post('/call', async(req, res, next) => {
     let patient = await Patient.findOne({ name: name });
     let patient_id = patient._id;
 
-    deletedOrder = await Order.findOne({ user_id: patient_id });
+    deletedOrder = await Order.findOne({ user_id: _user_id });
     console.log(deletedOrder);
 
     await Order.findOneAndRemove({
-            user_id: patient_id // some problem here ---> one patient <-> one order_id 
+            user_id: _user_id // some problem here ---> one patient <-> one order_id 
         }
         // , {}, function(err, data) { //debug function
         //     if (err) {
@@ -403,49 +406,45 @@ const patientDocToInterface = (doc) => {
 };
 
 // get: patient_info
-// TODO: YANGRQ modified here
 router.get('/patient_info/get', async(req, res, next) => {
     let { user_id: user_name } = req.query;
 
-    let patient_data = await Patient.findOne({
-        name: user_name
-    }).exec();
+    // if (n >= 0){
 
-    let patient_obj_id = patient_data._id;
-    console.log(`patient obj id is ${patient_obj_id}`)
+    // }
 
-    let order_data = await Order.findOne({
-        user_id: patient_obj_id
-    }).exec();
+    let _data = (await Patient.findOne({
+        user_id: _user_id
+    }).exec()) || [];
 
-    let { doctor_id } = order_data;
-    console.log(`doctor obj id is ${doctor_id}`)
 
-    let doctor_data = await Doctor.findOne({
-        _id: doctor_id
-    }).exec();
-
-    console.log(`doctor data is ${doctor_data}`);
+    let order_data = (await Order.findOne({
+        user_id: _user_id
+    }).exec()) || [];
 
     let { dept_id } = doctor_data;
     // let department_data = await Department.findOne({ _id: dept_id });
     let department_data = await Department.findById(dept_id).exec();
 
-    console.log(`depart data is ${department_data}`);
+    let _doctor_id = order_data.doctor_id;
 
+    let doctor_data = (await Doctor.findOne({
+        doctor_id: _doctor_id
+    }).exec()) || [];
+    console.log(doctor_data);
     let r = {
-        id: patient_obj_id,
-        name: user_name,
-        gender: patient_data.gender,
-        age: patient_data.age,
-        phone: patient_data.phone,
+        id: _user_id,
+        name: _data.name,
+        gender: _data.gender,
+        age: _data.age,
+        phone: _data.phone,
         appoint_date: order_data.date,
         section: order_data.time, //SectionType.Afternoon, // need export, not completed []
-        department: department_data.name,
+        department: doctor_data.dept_id,
         history: [] //_data.history
     };
 
-    console.log(`/patient_info/get return ${r}`);
+    console.log(r);
     res.json(r);
 });
 

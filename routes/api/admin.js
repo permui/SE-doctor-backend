@@ -40,17 +40,23 @@ router.post('/schedule/upload', async(req, res, next) => {
 
     let _date = stringToData(_schedule_id)
 
-    let doctor_entry = Doctor.findOne({
+    let doctor_entry = await Doctor.findOne({
         doctor_un: _doctor_id
     })
 
     // modified
-    await
+    let depart_entry = await Department.findOne({
+        name: _department
+    })
+
+    console.log(depart_entry);
+    console.log(depart_entry._id);
+
     await Schedule.findOneAndUpdate({
-            depart_id: _department
+            depart_id: depart_entry._id
         }, {
             $set: {
-                date: _date,
+                date: _date.getDay(),
                 time: _time,
                 doctor_id: doctor_entry._id
             }
@@ -91,7 +97,7 @@ router.post('/doctor/info_change', async(req, res, next) => {
     let _department_id = req.body.department;
     let _position = req.body.position;
 
-    let depart_entry = Department.findOne({
+    let depart_entry = await Department.findOne({
         name: _department_id
     })
 
@@ -127,15 +133,19 @@ router.post('/doctor/info_change', async(req, res, next) => {
     res.json(r);
 })
 
-async function findSchedules(dept_name, _date, _time, doctor_name) {
-    let depart_entry = Department.findOne({
+async function findSchedules(dept_name, _date, _time, doctor_un) {
+    let depart_entry = await Department.findOne({
         name: dept_name
+    })
+    let doctor_entry = await Doctor.findOne({
+        doctor_un : doctor_un
     })
 
     let all = await Schedule.find({
         date: _date,
         time: _time,
-        doctor_id: depart_entry._id
+        doctor_id: doctor_entry._id,
+        depart_id : depart_entry._id
     });
     let ret = [];
     for (let s of all) {
@@ -173,10 +183,19 @@ router.post('/schedule/create', async(req, res, next) => {
     let _depart_id = req.body.depart_id;
     let _quota = req.body.quota;
 
+    let _day = stringToData(_date);
+
     var msg = "success"; //return message
 
+    let doctor_entry = await Doctor.findOne({
+        doctor_un: _doctor_id
+    });
+    let depart_entry = await Department.findOne({
+        name: _depart_id
+    });
+
     //check if doctor_id already existed.
-    let duplicated_data = findSchedules(depart_id, _date, _time, doctor_id)
+    let duplicated_data = await findSchedules(_depart_id, _day.getDay(), _time, _doctor_id)
         // await Schedule.find({
         //     date: _date,
         //     time: _time,
@@ -186,14 +205,11 @@ router.post('/schedule/create', async(req, res, next) => {
     if (duplicated_data.length > 0) {
         msg = "添加排班失败，排班已存在";
     } else {
-        let doctor_entry = Doctor.findOne({
-            doctor_un: _doctor_id
-        })
-
         await Schedule.create({
-            date: _date,
+            date: _day.getDay(),
             time: _time,
             doctor_id: doctor_entry._id,
+            depart_id: depart_entry._id,
             quota: _quota
         });
     }
@@ -222,29 +238,36 @@ router.post('/schedule/delete', async(req, res, next) => {
     let _section = req.body.section; //should be morning, afternoon or evening
     let _doctor_id = req.body.doctor_id;
 
-    let doctor_entry = Doctor.findOne({
+    let doctor_entry = await Doctor.findOne({
         doctor_un: _doctor_id
-    })
-    let deleted_data = await Schedule.find({ //find the data that is to be deleted.
-        date: _date,
-        time: _section,
-        doctor_id: doctor_entry._id
     });
+    let depart_entry = await Department.findById(doctor_entry.dept_id);
+    
+    let _day = stringToData(_date);
+    _day = _day.getDay();
+
+    console.log(doctor_entry.doctor_un);
+    console.log(depart_entry.name);
+    // let deleted_data = await Schedule.find({ //find the data that is to be deleted.
+    //     date: _date,
+    //     time: _section,
+    //     doctor_id: doctor_entry._id
+    // });
+    let deleted_data = await findSchedules(depart_entry.name, _day, _section, _doctor_id);
 
     console.log(deleted_data);
 
     //check if schedule does not exist.
     var msg = "success";
 
-
-
     if (deleted_data.length == 0) {
         msg = "删除排班失败，排班不存在"
     } else {
-        await Schedule.remove({
-            date: _date,
+        await Schedule.deleteOne({
+            date: _day,
             time: _section,
-            doctor_id: doctor_entry._id
+            doctor_id: doctor_entry._id,
+            depart_id : depart_entry._id
         });
     }
 
@@ -262,16 +285,17 @@ async function getDeptSchedules(dept_name) {
     let all = await Schedule.find({});
     let ret = [];
     for (let s of all) {
-        let doctor = await Doctor.findById(s.doctor_id);
-        let dept = await Department.findById(doctor.dept_id);
+        // let dept = await Department.findById(doctor.dept_id);
+        let dept = await Department.findById(s.depart_id);
         if (dept.name == dept_name) {
             let the_date = new Date();
             let offset = s.date - the_date.getDay();
             the_date.setDate(the_date.getDate() + offset);
+            let doctor = await Doctor.findById(s.doctor_id);
             ret.push({
                 date: the_date,
                 time: s.time,
-                doctor_id: s.doctor_id,
+                doctor_id: doctor.doctor_un,
                 depart_id: dept_name,
                 quota: s.quota
             });

@@ -25,6 +25,11 @@ let options = {
     pass: "yzhblind",
     dbName: "data"
 };
+
+// let options = {
+//     user: "ReadWriter",
+//     pass: "ReadWriter"
+// };
 mongoose.connect(uri, options);
 mongoose.connection.once('open', () => {
     console.log("MongoDB connection established.")

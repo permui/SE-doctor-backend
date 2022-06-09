@@ -11,7 +11,7 @@ const scheduleSchema = m.Schema({
     date: Number, // [0,1,2,3,4,5,6]
     time: String, // [morning, afternoon, evening]
     doctor_id: ObjectId,
-    // depart_id: String,
+    depart_id: ObjectId,
     quota: Number
 });
 
