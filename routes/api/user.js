@@ -12,12 +12,11 @@ async function checkUser(id, password) {
         let a = await Admin.findOne({ adminis_un: id });
         if (a === null || a.password != password) return unp;
         return { role: consts.role.admin, id: id };
-    } else if (id[0] == 'D') {
-//         let d = await Doctor.findOne({ doctor_id: id });
+    } else{
         let d = await Doctor.findOne({ doctor_un: id });
         if (d === null || d.password != password) return unp;
         return { role: consts.role.doctor, id: id };
-    } else return unp;
+    }
 }
 
 router.post('/login', async (req, res, next) => {

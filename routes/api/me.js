@@ -41,7 +41,7 @@ router.get('/', async (req, res, next) => {
     } else if (u.role == consts.role.doctor) {
         let doctor = await Doctor.findOne({ doctor_id: u.id });
         // TODO: YANGRQ modified here
-        let department = await Department.findById(doctor.department_id);
+        let department = await Department.findById(doctor.dept_id);
         r = {
             success: true,
             status: 100,
