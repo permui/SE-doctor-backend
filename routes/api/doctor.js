@@ -210,15 +210,18 @@ router.post('/info/modify', async(req, res, next) => {
     let _position = req.body.position;
 
     // modified
+    let depart_entry = await Department.findOne({
+        name: _department
+    })
 
     await Doctor.findOneAndUpdate({
-            doctor_id: _doctor_id
+            doctor_un: _doctor_id
         }, {
             $set: {
                 name: _doctor_name,
                 gender: _gender,
                 age: _age,
-                dept_id: _department, // should not be uuidv4 here?
+                dept_id: depart_entry._id, // should not be uuidv4 here?
                 photo: _photo,
                 position: _position
             }
@@ -316,11 +319,8 @@ router.get('/patient_info/get', async(req, res, next) => {
         user_id: _user_id
     }).exec()) || [];
 
-<<<<<<< HEAD
-=======
     let { dept_id } = doctor_data;
     let department_data = await Department.findById(dept_id).exec();
->>>>>>> 2ecd6dbf674dcbf517f0cb3933e20d7a6eedff97
 
     let _doctor_id = order_data.doctor_id;
 
@@ -349,9 +349,9 @@ const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
     // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
-    const patient_data = await Patient.findOne({ name: interface.patient_id });
-    const doctor_data = await Doctor.findOne({ doctor_un: interface.doctor_id });
-    const depart_data = await Department.findOne({ name: interface.department });
+    const patient_data = Patient.findOne({ name: interface.patient_id });
+    const doctor_data = Doctor.findOne({ doctor_un: interface.doctor_id });
+    const depart_data = Department.findOne({ name: interface.department });
 
     const { _id: patient_id } = patient_data;
     const { _id: doctor_id } = doctor_data;
