@@ -306,11 +306,6 @@ router.post('/info/modify', async(req, res, next) => {
     let _photo = req.body.photo;
     let _position = req.body.position;
 
-    // modified
-    let depart_entry = await Department.findOne({
-        name: _department
-    })
-
     let depart_entry = await Department.findOne({ name: _department });
 
     await Doctor.findOneAndUpdate({
