@@ -48,20 +48,23 @@ const order = require('../../models/order');
 const Order = require("../../models/order"),
     Patient = require("../../models/patient");
 // get
-router.get('/get', async(req, res, next) => {
-    let _date = req.query.date;
-    let _doctor_id = req.query.doctor_id;
-    // _date = stringToDataBySplit(_date);
-    console.log(_doctor_id);
-    console.log(_date);
+router.get('/get', async (req, res, next) => {
+    let { date, doctor_id: doctor_un } = req.query;
+    console.log(`/register/get query ${req.query}`);
+    
+    let { _id: doctor_id} = await Doctor.findOne({ doctor_un: doctor_un });
+
     let order_data = (await Order.find({
-        doctor_id: _doctor_id,
-        date: _date
+        doctor_id: doctor_id,
+        date: date
     }).exec()) || [];
-    console.log(order_data);
+
+    console.log(`/register/get order data ${order_data}`);
+
     let patient_data = (await Patient.find({
-        user_id: order_data.map((value)=>value.user_id),
+        _id: order_data.map((value)=>value.user_id),
     }).exec()) || [];
+
     console.log(patient_data);
     var array = [];
     _user_id = order_data.map((value)=>value.user_id);
