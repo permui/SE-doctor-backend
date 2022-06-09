@@ -44,15 +44,28 @@ function stringToDataBySplit(dateString) {
 const express = require('express'),
     router = express.Router();
 
-const order = require('../../models/order');
 const Order = require("../../models/order"),
+    Doctor = require("../../models/doctor"),
     Patient = require("../../models/patient");
 // get
 router.get('/get', async (req, res, next) => {
     let { date, doctor_id: doctor_un } = req.query;
-    console.log(`/register/get query ${req.query}`);
+    console.log(`/register/get query ${date} ${doctor_un}`);
     
-    let { _id: doctor_id} = await Doctor.findOne({ doctor_un: doctor_un });
+    let doctor_data = await Doctor.findOne({ doctor_un: doctor_un });
+
+    if (!doctor_data) {
+        res.json(
+            {
+                status: 400,
+                msg: "fail to find doctor_un",
+                data: []
+            }
+        )
+        return;
+    }
+
+    let { _id: doctor_id } = doctor_data;
 
     let order_data = (await Order.find({
         doctor_id: doctor_id,
