@@ -328,7 +328,7 @@ router.get('/patient_info/get', async(req, res, next) => {
     console.log(`doctor data is ${doctor_data}`);
 
     let { dept_id } = doctor_data;
-    let department_data = await Department.findOne({ _id : dept_id });
+    let department_data = await Department.findById(dept_id).exec();
 
     console.log(`depart data is ${department_data}`);
 
@@ -348,18 +348,26 @@ router.get('/patient_info/get', async(req, res, next) => {
     res.json(r);
 });
 
-
+// TODO: YANGRQ modified here
 const diagnosisInterfaceToDoc = (interface) => {
     const now = new Date();
     // let _timestamp = formatDate(now, 'yyyy-mm-dd');
+
+    const patient_data = await Patient.findOne({ name: interface.patient_id });
+    const doctor_data = await Doctor.findOne({ doctor_un: interface.doctor_id });
+    const depart_data = await Department.findOne({ name: interface.department });
+
+    const { _id: patient_id } = patient_data;
+    const { _id: doctor_id } = doctor_data;
+    const { _id: depart_id } = depart_data;
 
     if (interface !== null && interface !== undefined &&
         interface.diagnosis_id !== null && interface.diagnosis_id !== undefined) {
         return {
             diagnosis_id: uuidv4(),
-            patient_id: interface.patient_id,
-            doctor_id: interface.doctor_id,
-            depart_id: interface.department,
+            patient_id,
+            doctor_id,
+            depart_id,
             timestamp: now, //_timestamp,
             diagnosis_message: interface.diagnosis_message,
             medicine_message: interface.medicine_message
