@@ -3,6 +3,7 @@ const express = require("express"),
     consts = require("./consts");
 
 const Admin = require("../../models/admin"),
+    Department = require("../../models/department"),
     Doctor = require("../../models/doctor");
 
 router.get('/', async (req, res, next) => {
@@ -38,7 +39,9 @@ router.get('/', async (req, res, next) => {
             }
         };
     } else if (u.role == consts.role.doctor) {
-        let d = await Doctor.findOne({ doctor_id: u.id });
+        let doctor = await Doctor.findOne({ doctor_id: u.id });
+        // TODO: YANGRQ modified here
+        let department = await Department.findById(doctor.department_id);
         r = {
             success: true,
             status: 100,
@@ -46,12 +49,12 @@ router.get('/', async (req, res, next) => {
             data: {
                 // ...d
                 role: "doctor",
-                name: d.name,
-                id: d.doctor_id,
-                gender: d.gender,
-                age: d.age,
-                position: d.position,
-                department: d.dept_id,
+                name: doctor.name,
+                id: doctor.doctor_un, // use doctor_un instead of doctor_id
+                gender: doctor.gender,
+                age: doctor.age,
+                position: doctor.position,
+                department: department.name,
                 access: u.role,
                 avatar: "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png"
             }
