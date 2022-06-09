@@ -349,7 +349,7 @@ router.get('/patient_info/get', async(req, res, next) => {
 });
 
 // TODO: YANGRQ modified here
-const diagnosisInterfaceToDoc = (interface) => {
+const diagnosisInterfaceToDoc = async (interface) => {
     const now = new Date();
     // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
