@@ -132,7 +132,7 @@ router.get('/get', async(req, res, next) => {
 
 //post: delete doctor
 router.delete('/delete', async(req, res, next) => {
-    if (req.session.user ? .role != consts.role.admin) {
+    if (req.session.user?.role != consts.role.admin) {
         let r = { status: 205, msg: "只有管理员才能删除！", data: {} };
         console.log(r);
         res.json(r);
@@ -170,7 +170,7 @@ router.delete('/delete', async(req, res, next) => {
 
 //post: create doctor
 router.post('/create', async(req, res, next) => {
-    if (req.session.user ? .role != consts.role.admin) {
+    if (req.session.user?.role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
