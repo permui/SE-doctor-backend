@@ -24,7 +24,7 @@ function stringToData(dateString) {
 
 // // not completed
 router.post('/schedule/upload', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ?.role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
@@ -40,28 +40,32 @@ router.post('/schedule/upload', async(req, res, next) => {
 
     let _date = stringToData(_schedule_id)
 
-    // modified
+    let doctor_entry = Doctor.findOne({
+        doctor_un: _doctor_id
+    })
 
+    // modified
+    await
     await Schedule.findOneAndUpdate({
-        depart_id: _department
-    }, {
-        $set: {
-            date: _date,
-            time: _time,
-            doctor_id: _doctor_id
+            depart_id: _department
+        }, {
+            $set: {
+                date: _date,
+                time: _time,
+                doctor_id: doctor_entry._id
+            }
         }
-    }
-    // , {}, function(err, data) { //debug function
-    //     if (err) {
-    //         console.log('Error in database')
-    //     } else if (!data) {
-    //         console.log('Not such data')
-    //         console.log(data)
-    //     } else {
-    //         console.log('Modify schedule data success')
-    //         console.log(data)
-    //     }
-    // }
+        // , {}, function(err, data) { //debug function
+        //     if (err) {
+        //         console.log('Error in database')
+        //     } else if (!data) {
+        //         console.log('Not such data')
+        //         console.log(data)
+        //     } else {
+        //         console.log('Modify schedule data success')
+        //         console.log(data)
+        //     }
+        // }
     );
 
     let r = {
@@ -76,7 +80,7 @@ router.post('/schedule/upload', async(req, res, next) => {
 
 // post: info_change
 router.post('/doctor/info_change', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ?.role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
@@ -87,25 +91,30 @@ router.post('/doctor/info_change', async(req, res, next) => {
     let _department_id = req.body.department;
     let _position = req.body.position;
 
+    let depart_entry = Department.findOne({
+        name: _department_id
+    })
+
     await Doctor.findOneAndUpdate({
-        doctor_id: _doctor_id
-    }, {
-        $set: {
-            dept_id: ObjectId(_department_id),
-            position: _position
+            // doctor_id: _doctor_id
+            doctor_un: _doctor_id
+        }, {
+            $set: {
+                dept_id: depart_entry._id,
+                position: _position
+            }
         }
-    }
-    // , {}, function(err, data) { //debug function
-    //     if (err) {
-    //         console.log('Error in database')
-    //     } else if (!data) {
-    //         console.log('Not such data')
-    //         console.log(data)
-    //     } else {
-    //         console.log('Modify doctor data success')
-    //         console.log(data)
-    //     }
-    // }
+        // , {}, function(err, data) { //debug function
+        //     if (err) {
+        //         console.log('Error in database')
+        //     } else if (!data) {
+        //         console.log('Not such data')
+        //         console.log(data)
+        //     } else {
+        //         console.log('Modify doctor data success')
+        //         console.log(data)
+        //     }
+        // }
     );
 
     let r = {
@@ -118,9 +127,39 @@ router.post('/doctor/info_change', async(req, res, next) => {
     res.json(r);
 })
 
+async function findSchedules(dept_name, _date, _time, doctor_name) {
+    let depart_entry = Department.findOne({
+        name: dept_name
+    })
+
+    let all = await Schedule.find({
+        date: _date,
+        time: _time,
+        doctor_id: depart_entry._id
+    });
+    let ret = [];
+    for (let s of all) {
+        let doctor = await Doctor.findById(s.doctor_id);
+        let dept = await Department.findById(doctor.dept_id);
+        if (dept.name == dept_name) {
+            let the_date = new Date();
+            let offset = s.date - the_date.getDay();
+            the_date.setDate(the_date.getDate() + offset);
+            ret.push({
+                date: the_date,
+                time: s.time,
+                doctor_id: s.doctor_id,
+                depart_id: dept_name,
+                quota: s.quota
+            });
+        }
+    }
+    return ret;
+}
+
 //post: create schedule
 router.post('/schedule/create', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ?.role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
@@ -133,27 +172,32 @@ router.post('/schedule/create', async(req, res, next) => {
     let _doctor_id = req.body.doctor_id;
     let _depart_id = req.body.depart_id;
     let _quota = req.body.quota;
-    
-    var msg = "success";//return message
+
+    var msg = "success"; //return message
 
     //check if doctor_id already existed.
-    let duplicated_data = await Schedule.find({
-        date: _date,
-        time: _time,
-        doctor_id: _doctor_id,
-        depart_id: _depart_id
-    });
-    if(duplicated_data.length>0){
+    let duplicated_data = findSchedules(depart_id, _date, _time, doctor_id)
+        // await Schedule.find({
+        //     date: _date,
+        //     time: _time,
+        //     doctor_id: ObjectId(_doctor_id),
+        //     depart_id: ObjectId(_depart_id)
+        // });
+    if (duplicated_data.length > 0) {
         msg = "添加排班失败，排班已存在";
-    }else{
+    } else {
+        let doctor_entry = Doctor.findOne({
+            doctor_un: _doctor_id
+        })
+
         await Schedule.create({
             date: _date,
             time: _time,
-            doctor_id: _doctor_id,
-            depart_id: _depart_id,
+            doctor_id: doctor_entry._id,
             quota: _quota
         });
     }
+
 
     let r = {
         status: 100,
@@ -167,34 +211,40 @@ router.post('/schedule/create', async(req, res, next) => {
 
 //post: delete schedule
 router.post('/schedule/delete', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ?.role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
         return;
     }
     console.log("into /schedule/delete");
-    let _date = req.body.date;  //should be a string like 20220601
-    let _section = req.body.section;    //should be morning, afternoon or evening
+    let _date = req.body.date; //should be a string like 20220601
+    let _section = req.body.section; //should be morning, afternoon or evening
     let _doctor_id = req.body.doctor_id;
 
-    let deleted_data = await Schedule.find({//find the data that is to be deleted.
-        date : _date,
-        time : _section,
-        doctor_id : _doctor_id
+    let doctor_entry = Doctor.findOne({
+        doctor_un: _doctor_id
+    })
+    let deleted_data = await Schedule.find({ //find the data that is to be deleted.
+        date: _date,
+        time: _section,
+        doctor_id: doctor_entry._id
     });
 
     console.log(deleted_data);
 
     //check if schedule does not exist.
     var msg = "success";
-    if(deleted_data.length==0){
+
+
+
+    if (deleted_data.length == 0) {
         msg = "删除排班失败，排班不存在"
-    }else{
+    } else {
         await Schedule.remove({
-            date : _date,
-            time : _section,
-            doctor_id : _doctor_id
+            date: _date,
+            time: _section,
+            doctor_id: doctor_entry._id
         });
     }
 
@@ -232,14 +282,14 @@ async function getDeptSchedules(dept_name) {
 
 //get: get schedule according to dept_id(or department)
 router.get('/schedule/get', async(req, res, next) => {
-    if (req.session.user?.role != consts.role.admin) {
+    if (req.session.user ?.role != consts.role.admin) {
         let r = { status: 205, msg: "requester not an admin", data: {} };
         console.log(r);
         res.json(r);
         return;
     }
     console.log("into /schedule/get");
-    let dept_name = req.query.dept_id;//should be a department name, like "dentistry".
+    let dept_name = req.query.dept_id; //should be a department name, like "dentistry".
     console.log(dept_name);
 
     var msg = "success";
