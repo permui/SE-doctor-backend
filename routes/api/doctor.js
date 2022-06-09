@@ -35,13 +35,13 @@ const doctorDocToInterface = (doc) => {
 };
 
 
-
+// YAY: test ok
 router.get('/details', async(req, res, next) => {
     let id = req.query.doctor_id;
     console.log(id)
         // let data = await Doctor.findOne({ doctor_id: id });
     let data = await Doctor.findOne({ doctor_un: id });
-    const result = data.map(doctorDocToInterface);
+    const result = doctorDocToInterface(data);
 
     let r = {
         status: 100,
@@ -53,7 +53,7 @@ router.get('/details', async(req, res, next) => {
 });
 
 
-const scheduleDocToInterface = (doc) => {
+const scheduleDocToInterface = async (doc) => {
     if (doc !== null && doc !== undefined) {
         let the_date = new Date();
         let offset = doc.date - the_date.getDay();
@@ -72,6 +72,7 @@ const scheduleDocToInterface = (doc) => {
     return doc;
 };
 
+// YAY: 
 router.get("/schedule", async(req, res, next) => {
     let id = req.query.doctor_id;
     let doctor_entry = Doctor.findOne({
@@ -96,7 +97,7 @@ router.get("/schedule", async(req, res, next) => {
 // wyp add the following function
 // not completed, if paging is needed
 
-const doctorinfoToInterface = (doc) => {
+const doctorinfoToInterface = async (doc) => {
     if (doc !== null && doc !== undefined) {
         let depart_entry = await Department.findOne({ name: _department });
 
@@ -435,7 +436,7 @@ router.get('/patient_info/get', async(req, res, next) => {
 // };
 
 // TODO: YANGRQ modified here
-const diagnosisInterfaceToDoc = (interface) => {
+const diagnosisInterfaceToDoc = async (interface) => {
     const now = new Date();
     // let _timestamp = formatDate(now, 'yyyy-mm-dd');
 
